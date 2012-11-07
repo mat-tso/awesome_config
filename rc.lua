@@ -78,8 +78,8 @@ layouts =
 tags = {
 	names = { "Terminal", "Opera", "Editeur", "Fichiers", "Media",
 		 "Skype", "Gimp", 8, 9 },
-	layout = { 
-		layouts[1], layouts[3], layouts[1], layouts[5], layouts[1], 
+	layout = {
+		layouts[1], layouts[1], layouts[1], layouts[5], layouts[1],
 		layouts[9], layouts[10], layouts[1], layouts[1] }
 	}
 for s = 1, screen.count() do
@@ -117,15 +117,17 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 	       pname = prg
 	    end
 
-	    if not arg_string then 
+	    if not arg_string then
 		awful.util.spawn_with_shell("pgrep -u $USER -x '" .. pname .. "' || (" .. prg .. ")",screen)
 	    else
 		awful.util.spawn_with_shell("pgrep -u $USER -x '" .. pname .. "' || (" .. prg .. " " .. arg_string .. ")",screen)
 	    end
 	end
 
-	--run_once("xscreensaver","-no-splash")
+	--run_once("xscreensaver", "-no-splash")
 	--run_once("opera")
+	run_once("firefox")
+	run_once("redshift", "-l 43.61:1.45 -m vidmode -t 5700:3690")
 	--run_once("xfce4-clipman")
 	--run_once("nm-applet")
 
@@ -134,59 +136,93 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 -- {{{ Wibox
 
 
---batterie widget
+--batterie widget -v toto
 	battery={}
-	battery.defaultAdapter="BAT0"
-	function battery.update(battery, adapter)
-		spacer = " "
-		adapter=adapter or battery.defaultAdapter
-		local fcur = io.open("/sys/class/power_supply/"..adapter.."/charge_now")    
-		local fcap = io.open("/sys/class/power_supply/"..adapter.."/charge_full")
-		local fsta = io.open("/sys/class/power_supply/"..adapter.."/status")
+	battery.defaultAdapter = "BAT0"
+	battery.defaultRefreshTime = 10
+
+	function battery:update()
+
+		--open power sys files
+		local fcur = io.open("/sys/class/power_supply/"..self.adapter.."/charge_now")
+		local fcap = io.open("/sys/class/power_supply/"..self.adapter.."/charge_full")
+		local fsta = io.open("/sys/class/power_supply/"..self.adapter.."/status")
+
 		if fcur and fcap and fsta then
+
+			--read them
 			local cur = fcur:read()
 			local cap = fcap:read()
 			local sta = fsta:read()
-			battery.state = math.floor(cur * 100 / cap)
-			if sta:match("Charging") then	--la baterie se charge
-				battery.info = "A/C ("..battery.state.."%)"
-			elseif sta:match("Discharging") then	--la baterie se décharge
-				if tonumber(battery.state) > 75 then
-					battery.info = "<span color='green'>" .. battery.state .. "%".."</span>"
-				elseif tonumber(battery.state) > 25 then
-					battery.info = battery.state.."%"
-				elseif tonumber(battery.state) > 15 then
-					battery.info = "<span color='orange'>" .. battery.state .. "%".."</span>"
+
+			local state = math.floor(cur * 100 / cap)
+			local info
+
+			if sta:match("Charging") then
+				--la baterie se charge
+				info = "A/C ("..state.."%)"
+
+			elseif sta:match("Discharging") then
+				--la baterie se décharge
+				if tonumber(state) > 75 then
+					info = "<span color='green'>" .. state .. "%".."</span>"
+
+				elseif tonumber(state) > 25 then
+					info = state.."%"
+
+				elseif tonumber(state) > 15 then
+					info = "<span color='orange'>" .. state .. "%".."</span>"
+
 				else
-					battery.info = "<span color='red'>" .. battery.state .. "%".."</span>"
-					local notification = naughty.notify({ title      = "Battery Warning"
-							, text       = "Battery low!"..spacer..battery.state.."%"..spacer.."left!"
-							, timeout    = 5
-							, position   = "top_right"
-							, fg         = beautiful.fg_focus
-							, bg         = beautiful.bg_focus
-						})
-					notification.config.presets="critical"
+					info = "<span color='red'>" .. state .. "%".."</span>"
+					local notification = naughty.notify(
+						{	title      = "Battery Warning" ,
+							text       = "Battery low!" .. spacer .. state .. "%" .. spacer .. "left!" ,
+							timeout    = 5 ,
+							position   = "top_right" ,
+							fg         = beautiful.fg_focus ,
+							bg         = beautiful.bg_focus
+						}
+					)
+
+					notification.config.presets = "critical"
 				end
-			elseif sta:match("Full") then --la batterie est completement chargée
-				battery.info = "F"
+
+			elseif sta:match("Full") then
+				--la batterie est completement chargée
+				info = "F"
+
 			else	--l'état de la baterie est inconnue
-				battery.info = "?"..battery.state.."%?"
+				info = "?"..state.."%?"
+
 			end
+
+			--close power sys files
 			fcur:close()
 			fcap:close()
 			fsta:close()
-			battery.info = "B:"..battery.info
+			info = "B:"..info
 		else
-			battery.info=""
+			info = "E"
 		end
-		battery.widget.text = battery.info
+		self.widget.text = info
 	end
-	battery.widget = widget({type = "textbox", name = "batteryget", align = "right" })
-	battery:update()
-	battery.timer=timer({timeout=10})
-	battery.timer:add_signal("timeout", function() battery:update() end)
-	battery.timer:start()
+
+	function battery.newWidget(o, adapter, refreshTime)
+
+		o.adapter = adapter or battery.defaultAdapter
+		o.refreshTime = refreshTime or battery.defaultRefreshTime
+		setmetatable(o, { __index = battery })
+
+		o.widget = widget({type = "textbox", name = "batteryget", align = "right" })
+		o:update()
+		o.timer=timer({timeout=o.refreshTime})
+		o.timer:add_signal("timeout", function() o:update() end)
+		o.timer:start()
+
+		return o.widget
+	end
+
 --save object
 	function newhistory(taille_history,periode)
 		local history = {}
@@ -194,7 +230,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		history.periode = periode or 1
 		history.table = {}
 		function history.add(element)
-			if type(element)=="number" then 
+			if type(element)=="number" then
 				table.insert(history.table,element)
 				if #history.table>history.taille_history then
 					table.remove(history.table,1)
@@ -214,16 +250,16 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 			for i = (nbvaleurTotal - nbvaleur + 1),nbvaleurTotal do
 				sum = sum + history.table[i]
 			end
-			return sum/nbvaleur,sum 
+			return sum/nbvaleur,sum
 		end
 		return history
-	end		
+	end
 -- memory usage widget
-	function readable (num,unit)
+	function humanReadable (num,unit)
 		num=tonumber(num)
 		unit = unit or {"","K","M","G","T"}
 		local text
-		if type(num) ~="number" then 
+		if type(num) ~="number" then
 			text=type(i)
 		else
 			local i=1
@@ -235,6 +271,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		end
 		return text
 	end
+
 	meminfo = {}
 	meminfo.stat = {}
 	function meminfo.get()
@@ -246,7 +283,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		end
 	end
 	meminfo.widget = widget({ type = "textbox", align = "right"})
-	function meminfo.update () 
+	function meminfo.update ()
 		meminfo.get()
 		local text = ((meminfo.stat["MemTotal"]
 				 - meminfo.stat["MemFree"]
@@ -254,10 +291,10 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 				 - meminfo.stat["Cached"])/ meminfo.stat["MemTotal"])*100
 		text = string.format("%02d",text)
 		meminfo.widget.text="M:"..text.."%"
-		
+
 	end
 	meminfo.update ()
-	
+
 	function meminfo.detailPopup ()
 		local info = {"Statistique de la mémoire vive",
 			{"utilisée par les programmes" 	, meminfo.stat["MemTotal"]
@@ -266,15 +303,15 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 				 - meminfo.stat["Cached"]
 				 },
 			{"mémoire libre" 		, meminfo.stat["MemFree"]},
-			{"disponible pour être allouée" , meminfo.stat["CommitLimit"]},
+			{"disponible pour ètre allouée" , meminfo.stat["CommitLimit"]},
 			{"mémoire totale" 		, meminfo.stat["MemTotal"]},
 			{"buffers" 			, meminfo.stat["Buffers"]},
 			{"utilisée comme cache" 	, meminfo.stat["Buffers"]+meminfo.stat["Cached"]},
-			
+
 			"\nStatistique des transferts",
 			{"cache (ex : transferts vers DD)" , meminfo.stat["Cached"]},
-			{"en attente d'être écrite sur le disque" , meminfo.stat["Dirty"]},
-			
+			{"en attente d'ètre écrite sur le disque" , meminfo.stat["Dirty"]},
+
 			"\nStatistique du swap",
 			{"swap alloué"		, meminfo.stat["SwapTotal"]-meminfo.stat["SwapFree"]},
 			{"swap disponible" 	, meminfo.stat["SwapFree"]},
@@ -285,7 +322,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 			if type(n) == "string" then
 				textPopup=textPopup..n.." : ".."\n"
 			else
-				textPopup=textPopup.."  "..n[1].." : "..readable(n[2],{"K","M","G","T"}).."\n"
+				textPopup=textPopup.."  "..n[1].." : "..humanReadable(n[2],{"K","M","G","T"}).."\n"
 			end
 		end
 		textPopup=textPopup.."\nconf : /proc/meminfo"
@@ -296,15 +333,15 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
                 })
 	end
 	meminfo.widget:add_signal('mouse::enter', function() meminfo.detailPopup() end)
-	meminfo.widget:add_signal('mouse::leave', function () 
+	meminfo.widget:add_signal('mouse::leave', function ()
 		naughty.destroy(meminfo.nautification)
 		meminfo.nautification=nil
 		end)
-	
+
 	meminfo.timer = timer({ timeout = 60})
 	meminfo.timer:add_signal("timeout", function() 	meminfo.update () end )
 	meminfo.timer:start()
-	
+
 -- CPU usage widget
 	jiffies = {}
 	function activecpu()
@@ -315,7 +352,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 				if not jiffies[cpu] then
 					jiffies[cpu] = newjiffies
 				end
-				--The string.format prevents your task list from jumping around 
+				--The string.format prevents your task list from jumping around
 				--when CPU usage goes above/below 10%
 				cpustat[cpu] = string.format("%02d", newjiffies-jiffies[cpu]) .. "% "
 				jiffies[cpu] = newjiffies
@@ -328,10 +365,10 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		local numcpu = 0
 		for line in io.lines("/proc/cpuinfo") do
 			local newnumcpu = string.match(line, "processor.*: (%d)")
-			if newnumcpu then 
-				numcpu = newnumcpu 
+			if newnumcpu then
+				numcpu = newnumcpu
 			end
-			
+
 			local newfreq = string.match(line, "cpu MHz.*:.(%d*)")
 			if newfreq then
 				freq = freq.."cpu"..numcpu..": "..newfreq .. "MHz "
@@ -340,7 +377,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		end
 		return freq
 	end
-	
+
 	function cpugovernor()
 		local cpuNames={"cpu0","cpu1"}  --a ameliorer
 		local governor = ""
@@ -351,28 +388,28 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		end
 		return governor
 	end
-	
+
 	function cpupopup (cpustat)
 		local s = ""
 		for key,value in pairs(cpustat) do s=s..key..": "..value.." " end
 		s=s.."\n"..cpufreq().."\n"..cpugovernor()
 		return s
 	end
-		
+
 	cpuinfo = widget({ type = "textbox", align = "right"})
-	
+
 	cpuinfo_timer = timer({ timeout = 1})
-	cpuinfo_timer:add_signal("timeout", function() 
+	cpuinfo_timer:add_signal("timeout", function()
 		local cpustat=activecpu()
 		cpuinfo.text = "cpu"..":"..(cpustat)["cpu"]
-		if cpuMoreInfo 
+		if cpuMoreInfo
 			then cpuMoreInfo.box.widgets[2].text=cpupopup(cpustat)
 			 --cpuinfo.text="POP"
 		end
 		end)
 	cpuinfo_timer:start()
-	
-  
+
+
 	cpuinfo:add_signal('mouse::enter', function ()
                 local cpustat=activecpu()
                 cpuMoreInfo= naughty.notify({
@@ -381,108 +418,143 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
                 width = 270, screen = mouse.screen
                 })end
         )
-	cpuinfo:add_signal('mouse::leave', function () 
+	cpuinfo:add_signal('mouse::leave', function ()
 		naughty.destroy(cpuMoreInfo)
 		cpuMoreInfo=nil
 		end
 	)
 --check lua config widget
-	--fonctions
-		function isLuaFileValid(path)
-			local f=awful.util.checkfile (path)
+		luaConfigFile = {}
+		luaConfigFile.configFilePath = awful.util.getdir("config").."/rc.lua"
+		luaConfigFile.debugFilePath = os.getenv("PWD") .. "/.xsession-errors"
+
+	--methodes
+		function luaConfigFile.isLuaFileValid(path)
+			local f=awful.util.checkfile(path)
 			local valid = true
 			if type(f) == "string" then
 				valid = false
 			end
 			return valid, f
 		end
-		function bool2char(bool)
+
+		function luaConfigFile.bool2char(bool)
 			local listChar = {[true]="✔",[false]="✘"}
 			return listChar[bool]
 		end
-		function io.cat(path)
-			local tableauLigne = {}
+
+		function luaConfigFile.tail(path, nbLine)
+			local nbLine = nbLine or 10
+			local fullFile = {}
 			for ligne in io.lines(path) do
-				table.insert(tableauLigne,ligne)
+				table.insert(fullFile,ligne)
 			end
-			return tableauLigne
+
+			local lastLines = {}
+			for num = (#fullFile - nbLine),#fullFile do
+				table.insert(lastLines, fullFile[num])
+			end
+
+			return lastLines
 		end
-	--configure widget
-		luaConfigFile = {}
-		luaConfigFile.widget = widget({ type = "textbox", name = "config", align = "right" })
-		--update
-		luaConfigFile.configFilePath = awful.util.getdir("config").."/rc.lua"
-		luaConfigFile.debugFilePath = os.getenv("PWD") .. "/.xsession-errors"
-		
-		luaConfigFile.update = function (notificationDemandee)
-			notificationDemandee= notificationDemandee or false
-			local valid,f=isLuaFileValid(luaConfigFile.configFilePath)
-			luaConfigFile.widget.text=bool2char(valid)
-			
-			local message = f
+
+		function luaConfigFile.clear()
+			io.open(luaConfigFile.debugFilePath,"w+"):close()
+		end
+
+		function luaConfigFile:update (notificationDemandee)
+			notificationDemandee = notificationDemandee or false
+
+			local valid, message = self.isLuaFileValid(self.configFilePath)
+			self.widget.text = self.bool2char(valid)
+
 			if valid then
-				local tableauLigne =  io.cat(luaConfigFile.debugFilePath)
-				local startLine=#tableauLigne-10
-				if startLine<1 then startLine=1 end
-				message = table.concat(tableauLigne,"\n",startLine)
-				if message=="" then message = 
-					"Tout est OK ;)\n"..
-					"Commande :\n"..
-					"clic1 \t\t\t\t: actualisation\n"..
-					"modkey+clic1 \t\t: ouvre rc.lua dans l'éditeur\n"..
-					"modkey+shift+clic1 \t: ouvre *.lua dans l'éditeur\n"..
-					"clic2 \t\t\t\t: restart si pas d'erreur\n"..
-					"clic3 \t\t\t\t: efface log et affiche ce message" 
+
+				local tableauLigne = self.tail(self.debugFilePath)
+				local nbligne = #tableauLigne
+
+				if nbligne < 1 then nbligne = 1 end
+
+				message = table.concat(tableauLigne,"\n")
+
+				if message == "" then
+					message =
+						"Tout est OK ;)\n"..
+						"Commande :\n"..
+						"clic1              : actualisation\n"..
+						"modkey+clic1       : ouvre rc.lua dans l'editeur\n"..
+						"modkey+shift+clic1 : ouvre *.lua dans l'editeur\n"..
+						"clic2              : restart si pas d'erreur\n"..
+						"clic3              : efface log et affiche ce message"
 				end
 			end
-			
-			if luaConfigFile.notification then
-				luaConfigFile.notification.box.widgets[2].text = message
-			elseif not luaConfigFile.notification and notificationDemandee then
-				luaConfigFile.notification = naughty.notify({
+
+			if notificationDemandee then
+				if  self.notification then
+					 naughty.destroy(self.notification)
+				end
+				self.notification = naughty.notify({
 					text = message,
 					timeout = 0, hover_timeout = 0.5,
-					width = 450, screen = mouse.screen
+					screen = mouse.screen, --width = 450
 		        	})
 			end
 		end
-		luaConfigFile.update()
-		luaConfigFile.clear= function ()
-			io.open(luaConfigFile.debugFilePath,"w+"):close()
-		end
-		--timer
-		luaConfigFile.timer = timer({ timeout = 30})
-		luaConfigFile.timer:add_signal("timeout", function () luaConfigFile.update() end)
-		luaConfigFile.timer:start()
-	--signals
-		luaConfigFile.widget:add_signal('mouse::enter', function ()
-			luaConfigFile.update(true)
-			end
-		)
-		luaConfigFile.widget:add_signal('mouse::leave', function () 
-					naughty.destroy(luaConfigFile.notification)
-					luaConfigFile.notification=nil
-			end
-		)
-	--mouse bouton
-		luaConfigFile.widget:buttons(awful.util.table.join(
-				awful.button({ }, 1, function () luaConfigFile.update() end),
-				awful.button({ modkey }, 1, function () 
+
+	--create widget
+		function luaConfigFile:addWidget()
+
+			self.widget = widget({ type = "textbox", name = "config", align = "right" })
+
+			self:update()
+			--timer
+			self.timer = timer({ timeout = 30})
+			self.timer:add_signal("timeout", function () self:update() end)
+			self.timer:start()
+
+		--signals
+			self.widget:add_signal('mouse::enter', function ()
+				self:update(true)
+				end
+			)
+			self.widget:add_signal('mouse::leave', function ()
+						naughty.destroy(self.notification)
+						self.notification=nil
+				end
+			)
+		--mouse bouton
+			self.widget:buttons(awful.util.table.join(
+				--update when left clic
+				awful.button({ }, 1, function () self:update(true) end),
+				--open editor mod left clic
+				awful.button({ modkey }, 1, function ()
 					awful.util.spawn(
-						editor .. " " .. awful.util.getdir("config") .. "/rc.lua",false,mouse.screen )
+						editor_cmd .. " " .. awful.util.getdir("config") .. "/rc.lua",false,mouse.screen )
 					end),
-				awful.button({ modkey , "Shift" }, 1, function () 
+				awful.button({ modkey , "Shift" }, 1, function ()
 					awful.util.spawn_with_shell(
-						editor .. " " .. awful.util.getdir("config") .. "/*.lua",false,mouse.screen )
+						editor_cmd .. " " .. awful.util.getdir("config") .. "/*.lua",false,mouse.screen )
 					end),
-				awful.button({ }, 2, function () 
-					if isLuaFileValid(luaConfigFile.configFilePath) then 
-						awesome.restart() 
-					end 
+				--restart midle clic
+				awful.button({ }, 2, function ()
+					if self.isLuaFileValid(self.configFilePath) then
+						awesome.restart()
+					end
 				end),
-				awful.button({ }, 3, function () luaConfigFile.clear() luaConfigFile.update() end)
+				--clean right clic
+				awful.button({ }, 3, function () self.clear() self:update(true) end)
 			))
-		
+		end
+
+	--constructor
+		function luaConfigFile.newWidget()
+			myluaConfigFile = {}
+			setmetatable(myluaConfigFile, { __index = luaConfigFile })
+
+			myluaConfigFile:addWidget()
+			return myluaConfigFile.widget
+		end
+
 --temperature widget
 		temperature = {}
 		temperature.update_periode=5
@@ -492,7 +564,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 			s=fs:read("*all")
 			fs:close()
 			local temperature = {}
-			for m,t in string.gmatch(s,"([%a%d\ ]+):\ *\([\+\-]%d+.%d+)°C") do
+			for m,t in string.gmatch(s,"([%a%d\ ]+):\ *\([\+\-]%d+.%d+)Â°C") do
 				temperature[m] = t
 			end
 			return temperature
@@ -548,7 +620,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		        	})
 		        end
 		)
-		temperature.widget:add_signal('mouse::leave', function () 
+		temperature.widget:add_signal('mouse::leave', function ()
 				naughty.destroy(temperature.popup)
 				temperature.popup=nil
 			end
@@ -557,7 +629,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		temperature.timer = timer({ timeout = temperature.update_periode})
 		temperature.timer:add_signal("timeout", function() temperature.update(temperature.widget,temperature.popup) end)
 		--temperature.timer:start()
-	
+
 -- Volume widget
 	--fonction definition
 		cardid  = 0
@@ -567,12 +639,12 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 				local fd = io.popen("amixer -c " .. cardid .. " -- sget " .. channel)
 				local status = fd:read("*all")
 				fd:close()
-		 		
+
 		 		local volume = string.match(status, "(%d?%d?%d)%%")
 		 		volume = string.format("% 3d", volume)
-		 
+
 		 		status = string.match(status, "%[(o[^%]]*)%]")
-		 
+
 		 		if string.find(status, "on", 1, true) then
 		 			volume = "V:" .. volume .. "%"
 		 		else
@@ -607,12 +679,12 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 
 --timer widget
 	CaR = CompteArebour()
-	
+
 -- Keyboard map indicator and changer
 	kbdcfg = {}
 	kbdcfg.cmd = "setxkbmap"
 	kbdcfg.layout = { "fr bepo", "fr" }
-	kbdcfg.layoutNames = { "bépo", "azerty" }
+	kbdcfg.layoutNames = { "bepo", "azerty" }
 	kbdcfg.current = 1  --  bépo is our default layout
 	kbdcfg.widget = widget({ type = "textbox", align = "right" })
 	kbdcfg.widget.text = " " .. kbdcfg.layoutNames[kbdcfg.current] .. " "
@@ -655,7 +727,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 	mytextclock = awful.widget.textclock({ align = "right" })
 	--add calendar
 	calendar2.addCalendarToWidget(mytextclock, "<span color='orange'>%s</span>")
--- test 
+-- test
 	mygraph = awful.widget.graph.new({ align = "right" })
 	mygraph:set_background_color("blue")
 	mygraph:set_color("red")
@@ -749,7 +821,7 @@ for s = 1, screen.count() do
 
         mylayoutbox[s],
         mytextclock,
---      luaConfigFile.widget,
+        luaConfigFile.newWidget(),
 --      separator,
 --      cpuinfo,
 --      separator,
@@ -931,8 +1003,12 @@ awful.rules.rules = {
     { rule = { class = "gimp" },
       properties = { floating = true, tag = tags[1][7] } },
     -- Set Firefox to always map on tags number 2 of screen 1.
-     { rule = { class = "Firefox" },
-       properties = { tag = tags[1][2] } },
+    { rule = { class = "Firefox" },
+      properties = { tag = tags[1][2] } },
+    -- Display plugin fullsceen
+    { rule = { instance = "plugin-container" },
+      properties = { floating = true } },
+    --set skype to tag 6
     { rule = { class = "skype" },
       properties = { tag = tags[1][6] , floating = false,  } },
 }
