@@ -16,6 +16,8 @@ require('CompteArebour')
 require('luaConfigFile')
 -- meminfo widget
 require('meminfo')
+-- volume management widget
+require('tb_volume')
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -415,52 +417,6 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		temperature.timer:add_signal("timeout", function() temperature.update(temperature.widget,temperature.popup) end)
 		--temperature.timer:start()
 
--- Volume widget
-	--fonction definition
-		cardid  = 0
-		channel = "Master"
-		function volume (mode, widget)
-			if mode == "update" then
-				local fd = io.popen("amixer -c " .. cardid .. " -- sget " .. channel)
-				local status = fd:read("*all")
-				fd:close()
-
-		 		local volume = string.match(status, "(%d?%d?%d)%%")
-		 		volume = string.format("% 3d", volume)
-
-		 		status = string.match(status, "%[(o[^%]]*)%]")
-
-		 		if string.find(status, "on", 1, true) then
-		 			volume = "V:" .. volume .. "%"
-		 		else
-		 			volume = "V:" .. volume .. "M"
-		 		end
-		 		widget.text = volume
-		 	elseif mode == "up" then
-		 		io.popen("amixer -q -c " .. cardid .. " sset " .. channel .. " 5%+"):read("*all")
-		 		volume("update", widget)
-		 	elseif mode == "down" then
-		 		io.popen("amixer -q -c " .. cardid .. " sset " .. channel .. " 5%-"):read("*all")
-		 		volume("update", widget)
-		 	else
-		 		io.popen("amixer -c " .. cardid .. " sset " .. channel .. " toggle"):read("*all")
-		 		volume("update", widget)
-		 	end
-		end
-	--update timer
-		tb_volume_timer = timer({ timeout = 10})
-		tb_volume_timer:add_signal("timeout", function() volume("update", tb_volume) end)
-		tb_volume_timer:start()
-	--widget definition
-		tb_volume = widget({ type = "textbox", name = "tb_volume", align = "right" })
-		--tb_volume.text = "volume"
-		tb_volume:buttons(awful.util.table.join(
-			awful.button({ }, 4, function () volume("up", tb_volume) end),
-			awful.button({ }, 5, function () volume("down", tb_volume) end),
-			awful.button({ }, 1, function () volume("mute", tb_volume) end),
-			awful.button({ }, 3, function () awful.util.spawn("xfce4-mixer",false,mouse.screen) end)
-		))
-		volume("update", tb_volume)
 
 --timer widget
 	CaR = CompteArebour()
@@ -528,6 +484,18 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 
 -- Create a systray
 mysystray = widget({ type = "systray" })
+
+
+-- Add a ammend keys fonction to root
+function root.addKeys(newKeys)
+	root.keys(
+		awful.util.table.join(
+			root.keys(),
+			newKeys
+		)
+	)
+end
+
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -615,8 +583,8 @@ for s = 1, screen.count() do
 --      battery.widget,
 --      separator,
 --      temperature.widget,
---      separator,
---      tb_volume,
+        separator,
+        tb_volume.newWidget(),
 --      kbdcfg.widget,
 --      CaR,
 --      vpnccfg.widget,
@@ -697,9 +665,6 @@ globalkeys = awful.util.table.join(
                   awful.util.getdir("cache") .. "/history_eval")
               end),
     --widget key
-    awful.key({},"XF86AudioRaiseVolume",     function () volume("up", tb_volume) 	end),
-    awful.key({},"XF86AudioLowerVolume",     function () volume("down", tb_volume) 	end),
-    awful.key({},"XF86AudioMute",	     function () volume("mute", tb_volume) 	end),
     awful.key({modkey,"Shift"  },"Tab"	,    function () kbdcfg.switch()		end)
 )
 
@@ -768,8 +733,8 @@ clientbuttons = awful.util.table.join(
     awful.button({ modkey }, 1, awful.mouse.client.move),
     awful.button({ modkey }, 3, awful.mouse.client.resize))
 
--- Set keys
-root.keys(globalkeys)
+-- Add keys
+root.addKeys(globalkeys)
 -- }}}
 
 -- {{{ Rules
