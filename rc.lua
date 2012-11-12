@@ -14,6 +14,8 @@ require('calendar2')
 require('CompteArebour')
 --lua config widget
 require('luaConfigFile')
+-- meminfo widget
+require('meminfo')
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -256,93 +258,6 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		end
 		return history
 	end
--- memory usage widget
-	function humanReadable (num,unit)
-		num=tonumber(num)
-		unit = unit or {"","K","M","G","T"}
-		local text
-		if type(num) ~="number" then
-			text=type(i)
-		else
-			local i=1
-			while num>=1024 do
-				num=num/1024
-				i=i+1
-			end
-			text=(math.floor(num*10)/10)..(unit[i] or "unknown unit")
-		end
-		return text
-	end
-
-	meminfo = {}
-	meminfo.stat = {}
-	function meminfo.get()
-		for line in io.lines("/proc/meminfo") do
-			local title, value = string.match(line, "(.+):\ +(%d+)")
-			if title and value then
-				meminfo.stat[title]=value
-			end
-		end
-	end
-	meminfo.widget = widget({ type = "textbox", align = "right"})
-	function meminfo.update ()
-		meminfo.get()
-		local text = ((meminfo.stat["MemTotal"]
-				 - meminfo.stat["MemFree"]
-				 - meminfo.stat["Buffers"]
-				 - meminfo.stat["Cached"])/ meminfo.stat["MemTotal"])*100
-		text = string.format("%02d",text)
-		meminfo.widget.text="M:"..text.."%"
-
-	end
-	meminfo.update ()
-
-	function meminfo.detailPopup ()
-		local info = {"Statistique de la mémoire vive",
-			{"utilisée par les programmes" 	, meminfo.stat["MemTotal"]
-				 - meminfo.stat["MemFree"]
-				 - meminfo.stat["Buffers"]
-				 - meminfo.stat["Cached"]
-				 },
-			{"mémoire libre" 		, meminfo.stat["MemFree"]},
-			{"disponible pour ètre allouée" , meminfo.stat["CommitLimit"]},
-			{"mémoire totale" 		, meminfo.stat["MemTotal"]},
-			{"buffers" 			, meminfo.stat["Buffers"]},
-			{"utilisée comme cache" 	, meminfo.stat["Buffers"]+meminfo.stat["Cached"]},
-
-			"\nStatistique des transferts",
-			{"cache (ex : transferts vers DD)" , meminfo.stat["Cached"]},
-			{"en attente d'ètre écrite sur le disque" , meminfo.stat["Dirty"]},
-
-			"\nStatistique du swap",
-			{"swap alloué"		, meminfo.stat["SwapTotal"]-meminfo.stat["SwapFree"]},
-			{"swap disponible" 	, meminfo.stat["SwapFree"]},
-			{"taille du swap" 	, meminfo.stat["SwapTotal"]},
-		}
-		local textPopup = ""
-		for i,n in pairs(info) do
-			if type(n) == "string" then
-				textPopup=textPopup..n.." : ".."\n"
-			else
-				textPopup=textPopup.."  "..n[1].." : "..humanReadable(n[2],{"K","M","G","T"}).."\n"
-			end
-		end
-		textPopup=textPopup.."\nconf : /proc/meminfo"
-		meminfo.nautification = naughty.notify({
-		        text = textPopup,
-		        timeout = 0, hover_timeout = 0.5,
-		        width = 270, screen = mouse.screen
-                })
-	end
-	meminfo.widget:add_signal('mouse::enter', function() meminfo.detailPopup() end)
-	meminfo.widget:add_signal('mouse::leave', function ()
-		naughty.destroy(meminfo.nautification)
-		meminfo.nautification=nil
-		end)
-
-	meminfo.timer = timer({ timeout = 60})
-	meminfo.timer:add_signal("timeout", function() 	meminfo.update () end )
-	meminfo.timer:start()
 
 -- CPU usage widget
 	jiffies = {}
@@ -694,8 +609,8 @@ for s = 1, screen.count() do
         luaConfigFile.newWidget(),
 --      separator,
 --      cpuinfo,
---      separator,
---      meminfo.widget,
+        separator,
+        meminfo.newWidget(),
 --      separator,
 --      battery.widget,
 --      separator,
