@@ -12,6 +12,8 @@ require("naughty")
 require('calendar2')
 --compte a rebour
 require('CompteArebour')
+--lua config widget
+require('luaConfigFile')
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -136,7 +138,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 -- {{{ Wibox
 
 
---batterie widget -v toto
+--batterie widget
 	battery={}
 	battery.defaultAdapter = "BAT0"
 	battery.defaultRefreshTime = 10
@@ -423,138 +425,6 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		cpuMoreInfo=nil
 		end
 	)
---check lua config widget
-		luaConfigFile = {}
-		luaConfigFile.configFilePath = awful.util.getdir("config").."/rc.lua"
-		luaConfigFile.debugFilePath = os.getenv("PWD") .. "/.xsession-errors"
-
-	--methodes
-		function luaConfigFile.isLuaFileValid(path)
-			local f=awful.util.checkfile(path)
-			local valid = true
-			if type(f) == "string" then
-				valid = false
-			end
-			return valid, f
-		end
-
-		function luaConfigFile.bool2char(bool)
-			local listChar = {[true]="✔",[false]="✘"}
-			return listChar[bool]
-		end
-
-		function luaConfigFile.tail(path, nbLine)
-			local nbLine = nbLine or 10
-			local fullFile = {}
-			for ligne in io.lines(path) do
-				table.insert(fullFile,ligne)
-			end
-
-			local lastLines = {}
-			for num = (#fullFile - nbLine),#fullFile do
-				table.insert(lastLines, fullFile[num])
-			end
-
-			return lastLines
-		end
-
-		function luaConfigFile.clear()
-			io.open(luaConfigFile.debugFilePath,"w+"):close()
-		end
-
-		function luaConfigFile:update (notificationDemandee)
-			notificationDemandee = notificationDemandee or false
-
-			local valid, message = self.isLuaFileValid(self.configFilePath)
-			self.widget.text = self.bool2char(valid)
-
-			if valid then
-
-				local tableauLigne = self.tail(self.debugFilePath)
-				local nbligne = #tableauLigne
-
-				if nbligne < 1 then nbligne = 1 end
-
-				message = table.concat(tableauLigne,"\n")
-
-				if message == "" then
-					message =
-						"Tout est OK ;)\n"..
-						"Commande :\n"..
-						"clic1              : actualisation\n"..
-						"modkey+clic1       : ouvre rc.lua dans l'editeur\n"..
-						"modkey+shift+clic1 : ouvre *.lua dans l'editeur\n"..
-						"clic2              : restart si pas d'erreur\n"..
-						"clic3              : efface log et affiche ce message"
-				end
-			end
-
-			if notificationDemandee then
-				if  self.notification then
-					 naughty.destroy(self.notification)
-				end
-				self.notification = naughty.notify({
-					text = message,
-					timeout = 0, hover_timeout = 0.5,
-					screen = mouse.screen, --width = 450
-		        	})
-			end
-		end
-
-	--create widget
-		function luaConfigFile:addWidget()
-
-			self.widget = widget({ type = "textbox", name = "config", align = "right" })
-
-			self:update()
-			--timer
-			self.timer = timer({ timeout = 30})
-			self.timer:add_signal("timeout", function () self:update() end)
-			self.timer:start()
-
-		--signals
-			self.widget:add_signal('mouse::enter', function ()
-				self:update(true)
-				end
-			)
-			self.widget:add_signal('mouse::leave', function ()
-						naughty.destroy(self.notification)
-						self.notification=nil
-				end
-			)
-		--mouse bouton
-			self.widget:buttons(awful.util.table.join(
-				--update when left clic
-				awful.button({ }, 1, function () self:update(true) end),
-				--open editor mod left clic
-				awful.button({ modkey }, 1, function ()
-					awful.util.spawn(
-						editor_cmd .. " " .. awful.util.getdir("config") .. "/rc.lua",false,mouse.screen )
-					end),
-				awful.button({ modkey , "Shift" }, 1, function ()
-					awful.util.spawn_with_shell(
-						editor_cmd .. " " .. awful.util.getdir("config") .. "/*.lua",false,mouse.screen )
-					end),
-				--restart midle clic
-				awful.button({ }, 2, function ()
-					if self.isLuaFileValid(self.configFilePath) then
-						awesome.restart()
-					end
-				end),
-				--clean right clic
-				awful.button({ }, 3, function () self.clear() self:update(true) end)
-			))
-		end
-
-	--constructor
-		function luaConfigFile.newWidget()
-			myluaConfigFile = {}
-			setmetatable(myluaConfigFile, { __index = luaConfigFile })
-
-			myluaConfigFile:addWidget()
-			return myluaConfigFile.widget
-		end
-
 --temperature widget
 		temperature = {}
 		temperature.update_periode=5
@@ -609,7 +479,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 			end
 		end
 	--widget definition
-		temperature.widget = widget({ type = "textbox", name = "tb_volume", align = "right" })
+		temperature.widget = widget({ type = "textbox", name = "temperature", align = "right" })
 		--temperature.update(temperature.widget)
 	--add button
 		temperature.widget:add_signal('mouse::enter', function ()
