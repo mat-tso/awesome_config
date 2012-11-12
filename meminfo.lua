@@ -2,13 +2,13 @@
 -- memory usage widget
 
 	meminfo = {}
-	
+
 	function meminfo.humanReadable (num,unit)
 		num=tonumber(num)
 		unit = unit or {"","K","M","G","T"}
 		local text
 		local i=1
-		while num>=1024 do
+		while num>=1024 and unit[i] do
 			num=num/1024
 			i=i+1
 		end
@@ -26,19 +26,22 @@
 	end
 	function meminfo:update ()
 		self:getInfo()
-		local text = ((self.stat["MemTotal"]
+		local myUsedMemory = ((self.stat["MemTotal"]
 				 - self.stat["MemFree"]
-				 - self.stat["Buffers"]
-				 - self.stat["Cached"])/ self.stat["MemTotal"])*100
-		text = string.format("%02d",text)
-		self.widget.text="M:"..text.."%"
+				 -- - self.stat["Buffers"]
+				 -- - self.stat["Cached"]
+				 ))
+		self.stat["myUsedMemory"] = myUsedMemory
+		local myUsedMemoryFrac = myUsedMemory / self.stat["MemTotal"]
+		self.graph:add_value(myUsedMemoryFrac)
 
 	end
 
 	function meminfo:detailPopup()
 		local info = {
 			{"Statistique de la mémoire vive", nil},
-			{"utilisée par les programmes", self.stat["MemTotal"]
+			{"utilisée (prog, buff, cache)" , self.stat["myUsedMemory"]},
+			{"utilisée par les programmes"  , self.stat["MemTotal"]
 				 - self.stat["MemFree"]
 				 - self.stat["Buffers"]
 				 - self.stat["Cached"]
@@ -61,10 +64,17 @@
 		local textPopup = ""
 		for index,pair in pairs(info) do
 			if pair[2] then
-				textPopup = textPopup.."  "..pair[1].." : "..meminfo.humanReadable(pair[2],{"K","M","G","T"}).."\n"
+				textPopup = textPopup.."  "..pair[1].." : "..
+					meminfo.humanReadable(pair[2], {"K","M","G","T"}) ..
+					" (" ..
+					-- round % nunber/total
+					math.floor(pair[2]/self.stat["MemTotal"]*100 + 0.5)
+					.. "%)"
 			else
-				textPopup = textPopup .. pair[1].." : \n"
+				textPopup = textPopup .. pair[1].." :"
 			end
+
+			textPopup = textPopup .. "\n"
 		end
 		textPopup = textPopup.."\nconf : /proc/meminfo"
 
@@ -75,28 +85,33 @@
                 })
 	end
 
-	function meminfo.newWidget()	
+	function meminfo.newWidget()
 		myMeminfo = {}
 
 		setmetatable(myMeminfo, { __index = meminfo })
 
 		myMeminfo:init()
 
-		return myMeminfo.widget
+		return myMeminfo.graph.widget
 	end
 
 	function meminfo:init ()
-	
+
 		self.stat = {}
 
-		self.widget = widget({ type = "textbox", align = "right",text = 'init...'})
-		self.widget:add_signal('mouse::enter', function() self:detailPopup() end)
-		self.widget:add_signal('mouse::leave', function ()
+		self.graph = awful.widget.graph()
+		self.graph:set_width(60)
+		self.graph:set_background_color('#494B4F')
+		self.graph:set_color('#FF5656')
+		self.graph:set_gradient_colors({ '#FF5656', '#88A175', '#AECF96' })
+
+		self.graph.widget:add_signal('mouse::enter', function() self:detailPopup() end)
+		self.graph.widget:add_signal('mouse::leave', function ()
 			naughty.destroy(self.nautification)
 			self.nautification=nil
 			end)
 
-		self.timer = timer({ timeout = 60})
+		self.timer = timer({ timeout = 10})
 		self.timer:add_signal("timeout", function() self:update () end )
 		self.timer:start()
 
