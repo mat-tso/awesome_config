@@ -428,27 +428,40 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		--temperature.timer:start()
 
 
---timer widget
-	CaR = CompteArebour()
 
 -- Keyboard map indicator and changer
 	kbdcfg = {}
 	kbdcfg.cmd = "setxkbmap"
-	kbdcfg.layout = { "fr bepo", "fr" }
-	kbdcfg.layoutNames = { "bepo", "azerty" }
+	kbdcfg.layout = { "fr bepo", "fr", "us"}
+	kbdcfg.layoutNames = { "bepo", "azerty", "qwerty"}
 	kbdcfg.current = 1  --  bépo is our default layout
-	kbdcfg.widget = widget({ type = "textbox", align = "right" })
-	kbdcfg.widget.text = " " .. kbdcfg.layoutNames[kbdcfg.current] .. " "
-	kbdcfg.switch = function (num)
-		kbdcfg.current = num or kbdcfg.current % #(kbdcfg.layout) + 1
-		kbdcfg.widget.text = " " .. kbdcfg.layoutNames[kbdcfg.current] .. " "
-		awful.util.spawn( kbdcfg.cmd .. " " .. kbdcfg.layout[kbdcfg.current] .. " " )
+
+	function kbdcfg:switch (num)
+		self.current = num or self.current % #(self.layout) + 1
+		self.widget.text = " " .. self.layoutNames[self.current] .. " "
+		awful.util.spawn( self.cmd .. " " .. self.layout[self.current] .. " " )
 	end
-	kbdcfg.switch(kbdcfg.current)
-	-- Mouse bindings
-	kbdcfg.widget:buttons(awful.util.table.join(
-		awful.button({ }, 1, function () kbdcfg.switch() end)
-	))
+
+	function kbdcfg:getWidget ()
+		if not self.widget then
+
+			self.widget = widget({ type = "textbox", align = "right" })
+			self.widget.text = " " .. self.layoutNames[self.current] .. " "
+
+			-- Mouse bindings
+			self.widget:buttons(awful.util.table.join(
+				awful.button({ }, 1, function () self:switch() end)
+			))
+			root.addKeys(
+				awful.key(
+					{modkey,"Shift"  },
+					"Tab", 
+					function ()	self:switch() end
+				)
+			)
+		end
+		return self.widget
+	end
 
 -- vpnc map indicator and changer
 	vpnccfg = {}
@@ -596,6 +609,8 @@ for s = 1, screen.count() do
         separator,
         tb_volume.newWidget(),
         separator,
+        kbdcfg:getWidget(),
+        separator,
         CompteArebours.newWidget(),
 --      vpnccfg.widget,
         s == 1 and mysystray or nil,
@@ -673,9 +688,7 @@ globalkeys = awful.util.table.join(
                   mypromptbox[mouse.screen].widget,
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
-              end),
-    --widget key
-    awful.key({modkey,"Shift"  },"Tab"	,    function () kbdcfg.switch()		end)
+              end)
 )
 
 clientkeys = awful.util.table.join(
