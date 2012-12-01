@@ -47,7 +47,8 @@
 				 - self.stat["Cached"]
 			},
 			{"mémoire libre" 		, self.stat["MemFree"]},
-			{"disponible pour ètre allouée" , self.stat["CommitLimit"]},
+			{"disponible pour être allouée" , self.stat["CommitLimit"]},
+			{"disponible (hors swap)"       , self.stat["CommitLimit"] - self.stat["SwapFree"]},
 			{"mémoire totale" 		, self.stat["MemTotal"]},
 			{"buffers" 			, self.stat["Buffers"]},
 			{"utilisée comme cache" 	, self.stat["Buffers"] + self.stat["Cached"]},
@@ -81,7 +82,8 @@
 		self.nautification = naughty.notify({
 		        text = textPopup,
 		        timeout = 0, hover_timeout = 0.5,
-		        width = 270, screen = mouse.screen
+		        -- width = 270,
+			screen = mouse.screen
                 })
 	end
 
