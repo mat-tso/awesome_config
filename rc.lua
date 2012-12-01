@@ -216,18 +216,28 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 
 	function battery.newWidget(o, adapter, refreshTime)
 
-		o.adapter = adapter or battery.defaultAdapter
-		o.refreshTime = refreshTime or battery.defaultRefreshTime
-		setmetatable(o, { __index = battery })
+		myBattery = {}
+		setmetatable(myBattery, { __index = battery })
 
-		o.widget = widget({type = "textbox", name = "batteryget", align = "right" })
-		o:update()
-		o.timer=timer({timeout=o.refreshTime})
-		o.timer:add_signal("timeout", function() o:update() end)
-		o.timer:start()
+		myBattery:init(adapter, refreshTime)
 
-		return o.widget
+		return myBattery.widget
 	end
+
+	function battery:init(adapter, refreshTime)
+
+		self.adapter = adapter or battery.defaultAdapter
+		self.refreshTime = refreshTime or battery.defaultRefreshTime
+
+		self.widget = widget({type = "textbox", name = "batteryget", align = "right" })
+		
+		self.timer=timer({timeout=o.refreshTime})
+		self.timer:add_signal("timeout", function() o:update() end)
+		self.timer:start()
+
+		self:update()
+	end
+
 
 --save object
 	function newhistory(taille_history,periode)
