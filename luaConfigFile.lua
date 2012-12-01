@@ -61,7 +61,8 @@ function luaConfigFile:update (notificationDemandee)
 				"Commande :\n"..
 				"clic1              : actualisation\n"..
 				"modkey+clic1       : ouvre rc.lua dans l'editeur\n"..
-				"modkey+shift+clic1 : ouvre *.lua dans l'editeur\n"..
+				"modkey+ctl+clic1   : ouvre *.lua dans l'éditeur\n"..
+				"modkey+shift+clic1 : ouvre $(dirname rc.lua) dans l'editeur\n"..
 				"clic2              : restart si pas d'erreur\n"..
 				"clic3              : efface log et affiche ce message"
 		end
@@ -79,6 +80,18 @@ function luaConfigFile:update (notificationDemandee)
 			screen = mouse.screen, --width = 450
 		})
 	end
+end
+
+function luaConfigFile.openConfigFile(file)
+
+	local command = terminal .. ' -e "' .. 
+			editor .. ' -p "' .. awful.util.getdir("config") .. "/" .. file .. '" ' ..
+			" -c '" ..
+				'cd "' .. awful.util.getdir("config") .. '"' .. 
+			"'"..
+		'"'
+
+	awful.util.spawn(command, false, mouse.screen)
 end
 
 --create widget
@@ -110,24 +123,26 @@ function luaConfigFile:addWidget()
 		awful.button({ }, 1, function () self:update(true) end),
 
 		--open editor mod left clic
-		awful.button({ modkey }, 1, function ()
-			awful.util.spawn(
-				editor_cmd .. " " .. awful.util.getdir("config") .. "/rc.lua",false,mouse.screen )
+		awful.button({ modkey }, 1, function () 
+				luaConfigFile.openConfigFile("rc.lua")
 			end),
 
 		awful.button({ modkey , "Shift" }, 1, function ()
-			awful.util.spawn(
-				editor_cmd .. " " .. awful.util.getdir("config"), false, mouse.screen )
+				luaConfigFile.openConfigFile("")
 			end),
 
-		awful.button({ modkey , "Control" }, 1, function ()
-			awful.util.spawn_with_shell(
-				"find ".. 
-					awful.util.getdir("config") .. 
-					" \\( -name .git -prune \\) -o " ..
-					"-name '*.lua' -print0 | " ..
-				"xargs --null -n1 -P5 ".. editor_cmd)
-			end),
+		awful.button({ modkey , "Control" }, 1, 
+			function ()
+				luaConfigFile.openConfigFile("*.lua")
+--				awful.util.spawn_with_shell(
+--					"cd '"..awful.util.getdir("config") .. "' && " ..
+--					"find  . " .. 
+--						" \\( -name .git -prune \\) -o " ..
+--						"-name '*.lua' -print0 | " ..
+--					"xargs --null -n1 -P5 ".. editor_cmd .. )
+--					editor_cmd .. "*.lua" )
+			end
+		),
 
 		--restart on midle clic
 		awful.button({ }, 2, function ()
