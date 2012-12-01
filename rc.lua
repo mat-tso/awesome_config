@@ -491,16 +491,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 	mytextclock = awful.widget.textclock({ align = "right" })
 	--add calendar
 	calendar2.addCalendarToWidget(mytextclock, "<span color='orange'>%s</span>")
--- test
-	mygraph = awful.widget.graph.new({ align = "right" })
-	mygraph:set_background_color("blue")
-	mygraph:set_color("red")
-	mygraph:set_width (20)
-	mygraph:set_scale(true)
-	--mygraph:set_stack(true)
-	mygraph:add_value(0.1)
-	mygraph:add_value(0.5)
-	mygraph:add_value(1)
+
 -- create separator
 	separator = widget({ type = "textbox" })
 	separator.text = " "
