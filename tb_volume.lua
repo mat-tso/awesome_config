@@ -52,7 +52,7 @@
 	function tb_volume:init(cardid, channel)
 
 		if cardid then
-			self.cardid = "-c " .. cardid 
+			self.cardid = "-c " .. cardid
 		else
 			self.cardid = ""
 		end
@@ -63,7 +63,7 @@
 		self.timer = timer({ timeout = 10})
 		self.timer:add_signal("timeout", function() self:update() end)
 		self.timer:start()
-		
+
 		--widget definition
 		self.widget = widget({ type = "textbox", name = "tb_volume", align = "right" })
 		--tb_volume.text = "volume"
@@ -72,14 +72,14 @@
 				awful.button({ }, 4, function () self:up() end),
 				awful.button({ }, 5, function () self:down() end),
 				awful.button({ }, 1, function () self:mute () end),
-				awful.button({ }, 3, function () 
-					awful.util.spawn(terminal .. "-e alsamixer",false,mouse.screen) 
+				awful.button({ }, 3, function ()
+					awful.util.spawn(terminal .. "-e alsamixer",false,mouse.screen)
 					end
 				)
 			)
 		)
 		self:update()
-		
+
 		-- add keys
 		root.addKeys(awful.util.table.join(
 			awful.key({},"XF86AudioRaiseVolume", function () self:up()   end),

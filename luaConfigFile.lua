@@ -73,7 +73,7 @@ function luaConfigFile:update (notificationDemandee)
 		if  self.notification then
 			 naughty.destroy(self.notification)
 		end
-		
+
 		self.notification = naughty.notify({
 			text = message,
 			timeout = 0, hover_timeout = 0.5,
@@ -84,10 +84,10 @@ end
 
 function luaConfigFile.openConfigFile(file)
 
-	local command = terminal .. ' -e "' .. 
+	local command = terminal .. ' -e "' ..
 			editor .. ' -p "' .. awful.util.getdir("config") .. "/" .. file .. '" ' ..
 			" -c '" ..
-				'cd "' .. awful.util.getdir("config") .. '"' .. 
+				'cd "' .. awful.util.getdir("config") .. '"' ..
 			"'"..
 		'"'
 
@@ -123,7 +123,7 @@ function luaConfigFile:addWidget()
 		awful.button({ }, 1, function () self:update(true) end),
 
 		--open editor mod left clic
-		awful.button({ modkey }, 1, function () 
+		awful.button({ modkey }, 1, function ()
 				luaConfigFile.openConfigFile("rc.lua")
 			end),
 
@@ -131,12 +131,12 @@ function luaConfigFile:addWidget()
 				luaConfigFile.openConfigFile("")
 			end),
 
-		awful.button({ modkey , "Control" }, 1, 
+		awful.button({ modkey , "Control" }, 1,
 			function ()
 				luaConfigFile.openConfigFile("*.lua")
 --				awful.util.spawn_with_shell(
 --					"cd '"..awful.util.getdir("config") .. "' && " ..
---					"find  . " .. 
+--					"find  . " ..
 --						" \\( -name .git -prune \\) -o " ..
 --						"-name '*.lua' -print0 | " ..
 --					"xargs --null -n1 -P5 ".. editor_cmd .. )

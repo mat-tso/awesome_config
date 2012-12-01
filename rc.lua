@@ -230,7 +230,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		self.refreshTime = refreshTime or battery.defaultRefreshTime
 
 		self.widget = widget({type = "textbox", name = "batteryget", align = "right" })
-		
+
 		self.timer=timer({timeout=o.refreshTime})
 		self.timer:add_signal("timeout", function() o:update() end)
 		self.timer:start()
@@ -455,7 +455,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 			root.addKeys(
 				awful.key(
 					{modkey,"Shift"  },
-					"Tab", 
+					"Tab",
 					function ()	self:switch() end
 				)
 			)

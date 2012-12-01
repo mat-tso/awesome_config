@@ -57,9 +57,9 @@ end
 function CompteArebours:recupSonnerie()
 
 	local file = io.open(self.adrrSonnerie)
-	if file then 
+	if file then
 		local son = file:read()
-			if son then 
+			if son then
 			--local mimetype = os.execute("mimetype -b "..son)
 			--local mediatype = string.match(mimetype, "\n(.+)/")
 			--if mediatype == "audio" then
@@ -79,22 +79,22 @@ end
 function CompteArebours:redraw()
 
 	local s,m,h = self.convertirTemps(self.tempsRestant)
-	if m == 0 and h == 0 then 
+	if m == 0 and h == 0 then
 		m=''
-	else 
-		m = m .. ":" 
+	else
+		m = m .. ":"
 	end
 
-	if h == 0 then 
+	if h == 0 then
 		h=''
-	else 
-		h = h .. ":" 
+	else
+		h = h .. ":"
 	end
 
 	self.widget.text = h..m..s
 end
 
-function CompteArebours:reset () 
+function CompteArebours:reset ()
 
 	self.tempsRestant = 0
 	self.timer:stop()
@@ -109,7 +109,7 @@ function CompteArebours:update ()
 		self:playRingtone()
 		self.notification()
 		self:redraw()
-	else 
+	else
 		self.tempsRestant = self.tempsRestant -1
 		self:redraw()
 	end
@@ -156,13 +156,13 @@ function CompteArebours:init(sonnerieFile)
 		awful.util.table.join(
 			awful.button({ }, 4, function () self:ajouter(60) end),
 			awful.button({ }, 5, function () self:ajouter(-60) end),
-			
+
 			awful.button({ "Shift" }, 4, function () self:ajouter(1) end),
 			awful.button({ "Shift" }, 5, function () self:ajouter(-1) end),
-			
+
 			awful.button({ "Control" }, 4, function () self:ajouter(3600) end),
 			awful.button({ "Control" }, 5, function () self:ajouter(-3600) end),
-			
+
 			awful.button({}, 1, function () self:start() end),
 			awful.button({}, 2, function () self:reset() end),
 			awful.button({}, 3, function () self:stopRingtone() end),
