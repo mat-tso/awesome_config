@@ -10,8 +10,8 @@ require("naughty")
 	--require("vicious")
 --to add a calendar
 require('calendar2')
---compte a rebour
-require('CompteArebour')
+--compte a rebours
+CompteArebours = require('CompteArebours')
 --lua config widget
 require('luaConfigFile')
 -- meminfo widget
@@ -585,8 +585,8 @@ for s = 1, screen.count() do
 --      temperature.widget,
         separator,
         tb_volume.newWidget(),
---      kbdcfg.widget,
---      CaR,
+        separator,
+        CompteArebours.newWidget(),
 --      vpnccfg.widget,
         s == 1 and mysystray or nil,
         mytasklist[s],
