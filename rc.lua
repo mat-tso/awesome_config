@@ -336,7 +336,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 			 --cpuinfo.text="POP"
 		end
 		end)
-	cpuinfo_timer:start()
+	--cpuinfo_timer:start()
 
 
 	cpuinfo:add_signal('mouse::enter', function ()
@@ -352,6 +352,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		cpuMoreInfo=nil
 		end
 	)
+
 --temperature widget
 		temperature = {}
 		temperature.update_periode=5
