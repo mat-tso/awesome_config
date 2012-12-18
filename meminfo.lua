@@ -66,7 +66,7 @@
 		for index,pair in pairs(info) do
 			if pair[2] then
 				textPopup = textPopup.."  "..pair[1].." : "..
-					meminfo.humanReadable(pair[2], {"K","M","G","T"}) ..
+					meminfo.humanReadable(pair[2], {"K", "M", "G", "T"}) ..
 					" (" ..
 					-- round % nunber/total
 					math.floor(pair[2]/self.stat["MemTotal"]*100 + 0.5)
@@ -105,6 +105,7 @@
 		self.graph:set_width(60)
 		self.graph:set_background_color('#494B4F')
 		self.graph:set_color('#FF5656')
+		self.graph:set_gradient_angle(0)
 		self.graph:set_gradient_colors({ '#FF5656', '#88A175', '#AECF96' })
 
 		self.graph.widget:add_signal('mouse::enter', function() self:detailPopup() end)
