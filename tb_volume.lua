@@ -61,7 +61,7 @@
 
 		--update timer
 		self.timer = timer({ timeout = 10})
-		self.timer:add_signal("timeout", function() self:update() end)
+		self.timer:connect_signal("timeout", function() self:update() end)
 		self.timer:start()
 
 		--widget definition

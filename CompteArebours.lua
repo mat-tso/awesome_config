@@ -171,10 +171,10 @@ function CompteArebours:init(sonnerieFile)
 	)
 
 	self.timer=timer ({timeout = self.periodeUpdate})
-	self.timer:add_signal("timeout",function () self:update() end)
+	self.timer:connect_signal("timeout",function () self:update() end)
 
 	self.timerSonnerie=timer ({timeout = 1})
-	self.timerSonnerie:add_signal("timeout",function () self:recupSonnerie() end)
+	self.timerSonnerie:connect_signal("timeout",function () self:recupSonnerie() end)
 end
 
 return CompteArebours.public

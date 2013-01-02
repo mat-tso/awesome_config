@@ -102,15 +102,15 @@ function luaConfigFile:addWidget()
 	self:update()
 	--timer
 	self.timer = timer({ timeout = 30})
-	self.timer:add_signal("timeout", function () self:update() end)
+	self.timer:connect_signal("timeout", function () self:update() end)
 	self.timer:start()
 
 	--signals
-	self.widget:add_signal('mouse::enter', function ()
+	self.widget:connect_signal('mouse::enter', function ()
 		self:update(true)
 		end
 	)
-	self.widget:add_signal('mouse::leave', function ()
+	self.widget:connect_signal('mouse::leave', function ()
 				naughty.destroy(self.notification)
 				self.notification=nil
 		end

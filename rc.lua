@@ -31,7 +31,7 @@ end
 -- Handle runtime errors after startup
 do
     local in_error = false
-    awesome.add_signal("debug::error", function (err)
+    awesome.connect_signal("debug::error", function (err)
         -- Make sure we don't go into an endless error loop
         if in_error then return end
         in_error = true
@@ -232,7 +232,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		self.widget = widget({type = "textbox", name = "batteryget", align = "right" })
 
 		self.timer=timer({timeout=o.refreshTime})
-		self.timer:add_signal("timeout", function() o:update() end)
+		self.timer:connect_signal("timeout", function() o:update() end)
 		self.timer:start()
 
 		self:update()
@@ -328,7 +328,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 	cpuinfo = widget({ type = "textbox", align = "right"})
 
 	cpuinfo_timer = timer({ timeout = 1})
-	cpuinfo_timer:add_signal("timeout", function()
+	cpuinfo_timer:connect_signal("timeout", function()
 		local cpustat=activecpu()
 		cpuinfo.text = "cpu"..":"..(cpustat)["cpu"]
 		if cpuMoreInfo
@@ -339,7 +339,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 	--cpuinfo_timer:start()
 
 
-	cpuinfo:add_signal('mouse::enter', function ()
+	cpuinfo:connect_signal('mouse::enter', function ()
                 local cpustat=activecpu()
                 cpuMoreInfo= naughty.notify({
                 text = cpupopup(cpustat),
@@ -347,7 +347,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
                 width = 270, screen = mouse.screen
                 })end
         )
-	cpuinfo:add_signal('mouse::leave', function ()
+	cpuinfo:connect_signal('mouse::leave', function ()
 		naughty.destroy(cpuMoreInfo)
 		cpuMoreInfo=nil
 		end
@@ -410,7 +410,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		temperature.widget = widget({ type = "textbox", name = "temperature", align = "right" })
 		--temperature.update(temperature.widget)
 	--add button
-		temperature.widget:add_signal('mouse::enter', function ()
+		temperature.widget:connect_signal('mouse::enter', function ()
 				temperature.popup = naughty.notify({
 					text = temperature.textPopup(temperature.temperatures),
 					timeout = 0, hover_timeout = 0.5,
@@ -418,14 +418,14 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 		        	})
 		        end
 		)
-		temperature.widget:add_signal('mouse::leave', function ()
+		temperature.widget:connect_signal('mouse::leave', function ()
 				naughty.destroy(temperature.popup)
 				temperature.popup=nil
 			end
 		)
 	--update timer
 		temperature.timer = timer({ timeout = temperature.update_periode})
-		temperature.timer:add_signal("timeout", function() temperature.update(temperature.widget,temperature.popup) end)
+		temperature.timer:connect_signal("timeout", function() temperature.update(temperature.widget,temperature.popup) end)
 		--temperature.timer:start()
 
 
@@ -781,12 +781,12 @@ awful.rules.rules = {
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
-client.add_signal("manage", function (c, startup)
+client.connect_signal("manage", function (c, startup)
     -- Add a titlebar
     -- awful.titlebar.add(c, { modkey = modkey })
 
     -- Enable sloppy focus
-    c:add_signal("mouse::enter", function(c)
+    c:connect_signal("mouse::enter", function(c)
         if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
             and awful.client.focus.filter(c) then
             client.focus = c
@@ -806,6 +806,6 @@ client.add_signal("manage", function (c, startup)
     end
 end)
 
-client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
