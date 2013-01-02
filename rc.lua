@@ -276,7 +276,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 	function activecpu()
 		local cpustat = {}
 		for line in io.lines("/proc/stat") do
-			local cpu, newjiffies = string.match(line, "(cpu%d*)\ +(%d+)")
+			local cpu, newjiffies = string.match(line, "(cpu%d*) +(%d+)")
 			if cpu and newjiffies then
 				if not jiffies[cpu] then
 					jiffies[cpu] = newjiffies
@@ -362,7 +362,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 			s=fs:read("*all")
 			fs:close()
 			local temperature = {}
-			for m,t in string.gmatch(s,"([%a%d\ ]+):\ *\([\+\-]%d+.%d+)Â°C") do
+			for m,t in string.gmatch(s,"([%a%d ]+): *([+-]%d+.%d+)Â°C") do
 				temperature[m] = t
 			end
 			return temperature

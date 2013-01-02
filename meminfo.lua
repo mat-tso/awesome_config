@@ -18,7 +18,7 @@
 
 	function meminfo:getInfo()
 		for line in io.lines("/proc/meminfo") do
-			local title, value = string.match(line, "(.+):\ +(%d+)")
+			local title, value = string.match(line, "(.+): +(%d+)")
 			if title and value then
 				self.stat[title] = value
 			end
