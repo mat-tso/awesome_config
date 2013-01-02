@@ -1,23 +1,27 @@
 -- Standard awesome library
-require("awful")
+local gears = require("gears")
+local awful = require("awful")
+awful.rules = require("awful.rules")
 require("awful.autofocus")
-require("awful.rules")
+-- Widget and layout library
+local wibox = require("wibox")
 -- Theme handling library
-require("beautiful")
+local beautiful = require("beautiful")
 -- Notification library
-require("naughty")
-	-- Vicious widget library
-	--require("vicious")
+local naughty = require("naughty")
+local menubar = require("menubar")
+
+-- User library
 --to add a calendar
-require('calendar2')
+local calendar2 = require('calendar2')
 --compte a rebours
-CompteArebours = require('CompteArebours')
+local CompteArebours = require('CompteArebours')
 --lua config widget
-require('luaConfigFile')
+local luaConfigFile = require('luaConfigFile')
 -- meminfo widget
-require('meminfo')
+local meminfo = require('meminfo')
 -- volume management widget
-require('tb_volume')
+local tb_volume = require('tb_volume')
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
