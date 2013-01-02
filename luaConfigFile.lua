@@ -1,4 +1,6 @@
 
+local awful = require("awful")
+
 --check lua config widget
 
 luaConfigFile = {}
