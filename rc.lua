@@ -133,7 +133,7 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 	--run_once("xscreensaver", "-no-splash")
 	--run_once("opera")
 	run_once("firefox")
-	run_once("redshift", "-l 43.61:1.45 -m vidmode -t 5700:3690")
+	run_once("redshift", "-l 43.61:1.45 -m vidmode -t 5700:3690 -r")
 	--run_once("xfce4-clipman")
 	--run_once("nm-applet")
 
