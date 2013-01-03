@@ -46,7 +46,7 @@ function luaConfigFile:update (notificationDemandee)
 	notificationDemandee = notificationDemandee or false
 
 	local valid, message = self.isLuaFileValid(self.configFilePath)
-	self.widget.text = self.bool2char(valid)
+	self.widget:set_text(self.bool2char(valid))
 
 	if valid then
 
@@ -99,7 +99,7 @@ end
 --create widget
 function luaConfigFile:addWidget()
 
-	self.widget = widget({ type = "textbox", name = "config", align = "right" })
+	self.widget = wibox.widget.textbox()
 
 	self:update()
 	--timer

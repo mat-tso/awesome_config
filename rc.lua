@@ -225,7 +225,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 		else
 			info = "E"
 		end
-		self.widget.text = info
+		self.widget:set_markup(info)
 	end
 
 	function battery.newWidget(o, adapter, refreshTime)
@@ -243,7 +243,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 		self.adapter = adapter or battery.defaultAdapter
 		self.refreshTime = refreshTime or battery.defaultRefreshTime
 
-		self.widget = widget({type = "textbox", name = "batteryget", align = "right" })
+		self.widget = wibox.widget.textbox()
 
 		self.timer=timer({timeout=o.refreshTime})
 		self.timer:connect_signal("timeout", function() o:update() end)
@@ -339,15 +339,15 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 		return s
 	end
 
-	cpuinfo = widget({ type = "textbox", align = "right"})
+	cpuinfo = wibox.widget.textbox()
 
 	cpuinfo_timer = timer({ timeout = 1})
 	cpuinfo_timer:connect_signal("timeout", function()
 		local cpustat=activecpu()
-		cpuinfo.text = "cpu"..":"..(cpustat)["cpu"]
+		cpuinfo:set_text("cpu"..":"..(cpustat)["cpu"])
 		if cpuMoreInfo
-			then cpuMoreInfo.box.widgets[2].text=cpupopup(cpustat)
-			 --cpuinfo.text="POP"
+			then cpuMoreInfo.box.widgets[2]:set_text(cpupopup(cpustat))
+			 --cpuinfo:set_text("POP")
 		end
 		end)
 	--cpuinfo_timer:start()
@@ -356,9 +356,9 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 	cpuinfo:connect_signal('mouse::enter', function ()
                 local cpustat=activecpu()
                 cpuMoreInfo= naughty.notify({
-                text = cpupopup(cpustat),
-                timeout = 0, hover_timeout = 0.5,
-                width = 270, screen = mouse.screen
+					text = cpupopup(cpustat),
+					timeout = 0, hover_timeout = 0.5,
+					width = 270, screen = mouse.screen
                 })end
         )
 	cpuinfo:connect_signal('mouse::leave', function ()
@@ -415,13 +415,13 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 			end
 			local m,t = next(temperature.history)
 			t = t.moy(0) or "err"
-			widget.text = "T:"..temperature.temptostring (t).."°C"
+			widget:set_text("T:"..temperature.temptostring (t).."°C")
 			if widget_popup then
-				widget_popup.box.widgets[2].text= temperature.textPopup()
+				widget_popup.box.widgets[2]:set_text(temperature.textPopup())
 			end
 		end
 	--widget definition
-		temperature.widget = widget({ type = "textbox", name = "temperature", align = "right" })
+		temperature.widget = wibox.widget.textbox()
 		--temperature.update(temperature.widget)
 	--add button
 		temperature.widget:connect_signal('mouse::enter', function ()
@@ -453,15 +453,15 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 	function kbdcfg:switch (num)
 		self.current = num or self.current % #(self.layout) + 1
-		self.widget.text = " " .. self.layoutNames[self.current] .. " "
+		self.widget:set_text(" " .. self.layoutNames[self.current] .. " ")
 		awful.util.spawn( self.cmd .. " " .. self.layout[self.current] .. " " )
 	end
 
 	function kbdcfg:getWidget ()
 		if not self.widget then
 
-			self.widget = widget({ type = "textbox", align = "right" })
-			self.widget.text = " " .. self.layoutNames[self.current] .. " "
+			self.widget = wibox.widget.textbox()
+			self.widget:set_text(" " .. self.layoutNames[self.current] .. " ")
 
 			-- Mouse bindings
 			self.widget:buttons(awful.util.table.join(
@@ -484,14 +484,14 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 	vpnccfg.cmd = { "usvpnc", "usvpnc-disconnect" }
 	vpnccfg.cmdNames = { "VPN", "[VPN]" }
 	vpnccfg.current = 2
-	vpnccfg.widget = widget({ type = "textbox", align = "right" })
-	vpnccfg.widget.text = " " .. vpnccfg.cmdNames[vpnccfg.current] .. " "
+	vpnccfg.widget = wibox.widget.textbox()
+	vpnccfg.widget:set_text(" " .. vpnccfg.cmdNames[vpnccfg.current] .. " ")
 	vpnccfg.switch = function ()
 		vpnccfg.current = vpnccfg.current % #(vpnccfg.cmd) + 1
-		vpnccfg.widget.text = " " .. vpnccfg.cmdNames[vpnccfg.current] .. " "
+		vpnccfg.widget:set_text(" " .. vpnccfg.cmdNames[vpnccfg.current] .. " ")
 		local pid = awful.util.spawn(vpnccfg.cmd[vpnccfg.current])
 		--[[
-		naughty.notify({	text = tostring(err).."\t".. vpnccf.gcodeErreur[err] or "erreur indefinie",
+		naughty.notify({text = tostring(err).."\t".. vpnccf.gcodeErreur[err] or "erreur indefinie",
 					timeout = 3, hover_timeout = 0.5,
 					width = 270, screen = mouse.screen
 		        	})--]]
@@ -508,12 +508,8 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 	calendar2.addCalendarToWidget(mytextclock, "<span color='orange'>%s</span>")
 
 -- create separator
-	separator = widget({ type = "textbox" })
-	separator.text = " "
-
--- Create a systray
-mysystray = widget({ type = "systray" })
-
+	separator = wibox.widget.textbox()
+	separator:set_text(" ")
 
 -- Add a ammend keys fonction to root
 function root.addKeys(newKeys)
@@ -610,21 +606,21 @@ for s = 1, screen.count() do
     if s == 1 then right_layout:add(wibox.widget.systray()) end
     right_layout:add(mytextclock)
     right_layout:add(mylayoutbox[s])
-    right_layout:add(luaConfigFile.newWidget())
+--     right_layout:add(luaConfigFile.newWidget())
 --     right_layout:add(separator)
 --     right_layout:add(cpuinfo)
-    right_layout:add(cseparator)
-    right_layout:add(cmeminfo.newWidget())
+--     right_layout:add(cseparator)
+--     right_layout:add(cmeminfo.newWidget())
 --     right_layout:add(cseparator)
 --     right_layout:add(battery.widget)
 --     right_layout:add(separator)
 --     right_layout:add(temperature.widget)
-    right_layout:add(separator)
-    right_layout:add(tb_volume.newWidget())
-    right_layout:add(separator)
-    right_layout:add(kbdcfg:getWidget())
-    right_layout:add(separator)
-    right_layout:add(CompteArebours.newWidget())
+--     right_layout:add(separator)
+--     right_layout:add(tb_volume.newWidget())
+--     right_layout:add(separator)
+--     right_layout:add(kbdcfg:getWidget())
+--     right_layout:add(separator)
+--     right_layout:add(CompteArebours.newWidget())
 --     right_layout:add(vpnccfg.widget)
 
     -- Now bring it all together (with the tasklist in the middle)

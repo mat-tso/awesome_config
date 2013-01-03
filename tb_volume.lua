@@ -19,7 +19,7 @@
 		else
 			volume = "V:" .. volume .. "M"
 		end
-		self.widget.text = volume
+		self.widget:set_text(volume)
 	end
 
 	function tb_volume:setVolume (newVolume)
@@ -65,8 +65,8 @@
 		self.timer:start()
 
 		--widget definition
-		self.widget = widget({ type = "textbox", name = "tb_volume", align = "right" })
-		--tb_volume.text = "volume"
+		self.widget = wibox.widget.textbox()
+		--tb_volume:set_text("volume")
 		self.widget:buttons(
 			awful.util.table.join(
 				awful.button({ }, 4, function () self:up() end),

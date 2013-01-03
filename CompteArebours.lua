@@ -91,14 +91,14 @@ function CompteArebours:redraw()
 		h = h .. ":"
 	end
 
-	self.widget.text = h..m..s
+	self.widget:set_text(h..m..s)
 end
 
 function CompteArebours:reset ()
 
 	self.tempsRestant = 0
 	self.timer:stop()
-	self.widget.text = self.defaultText
+	self.widget:set_text(self.defaultText)
 	self:stopRingtone()
 end
 
@@ -149,8 +149,8 @@ function CompteArebours:init(sonnerieFile)
 	self.tempsRestant=0
 	self.PIDsonnerie = nil
 
-	self.widget = widget ({type = "textbox",align = "right" })
-	self.widget.text= self.defaultText
+	self.widget = wibox.widget.textbox()
+	self.widget:set_text(self.defaultText)
 
 	self.widget:buttons(
 		awful.util.table.join(
