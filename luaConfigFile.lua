@@ -1,11 +1,18 @@
+-- This module provide a widget that monitor the lua config file and check for
+-- it's integity
 
+-- Standard awesome library
 local awful = require("awful")
+-- Widget and layout library
+local wibox = require("wibox")
+-- Notification library
+local naughty = require("naughty")
 
 --check lua config widget
 
 luaConfigFile = {}
 luaConfigFile.configFilePath = awful.util.getdir("config").."/rc.lua"
-luaConfigFile.debugFilePath = os.getenv("PWD") .. "/.xsession-errors"
+luaConfigFile.debugFilePath = os.getenv("HOME") .. "/.xsession-errors"
 
 --methodes
 function luaConfigFile.isLuaFileValid(path)
@@ -167,3 +174,4 @@ function luaConfigFile.newWidget()
 	return myluaConfigFile.widget
 end
 
+return luaConfigFile
