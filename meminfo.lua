@@ -1,3 +1,12 @@
+-- This module provide a widget that monitor the memory consuption
+
+-- Standard awesome library
+local awful = require("awful")
+local gears = require("gears")
+-- Widget and layout library
+local wibox = require("wibox")
+-- Notification library
+local naughty = require("naughty")
 
 -- memory usage widget
 
@@ -94,29 +103,35 @@
 
 		myMeminfo:init()
 
-		return myMeminfo.graph.widget
+		return myMeminfo.graph
 	end
 
-	function meminfo:init ()
+	function meminfo:init()
 
 		self.stat = {}
 
 		self.graph = awful.widget.graph()
 		self.graph:set_width(60)
-		self.graph:set_background_color('#494B4F')
-		self.graph:set_color('#FF5656')
-		self.graph:set_gradient_angle(0)
-		self.graph:set_gradient_colors({ '#FF5656', '#88A175', '#AECF96' })
+		self.graph:set_background_color('#808080') -- Gray
+		self.graph:set_color('#008000') -- Green
 
-		self.graph.widget:connect_signal('mouse::enter', function() self:detailPopup() end)
-		self.graph.widget:connect_signal('mouse::leave', function ()
-			naughty.destroy(self.nautification)
-			self.nautification=nil
-			end)
+		self.graph:connect_signal(
+			'mouse::enter',
+			function() self:detailPopup() end
+		)
+		self.graph:connect_signal(
+			'mouse::leave',
+			function ()
+				naughty.destroy(self.nautification)
+				self.nautification=nil
+			end
+		)
 
-		self.timer = timer({ timeout = 10})
+		self.timer = timer({timeout = 10})
 		self.timer:connect_signal("timeout", function() self:update () end )
 		self.timer:start()
 
 		self:update ()
 	end
+
+return meminfo

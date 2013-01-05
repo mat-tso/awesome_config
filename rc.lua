@@ -72,7 +72,7 @@ local layouts =
     awful.layout.suit.tile.bottom,
     awful.layout.suit.tile.top,
     awful.layout.suit.fair,
-    --5
+    -- 5
     awful.layout.suit.fair.horizontal,
     --awful.layout.suit.spiral,
     --awful.layout.suit.spiral.dwindle,
@@ -604,11 +604,11 @@ for s = 1, screen.count() do
     -- Widgets that are aligned to the right
     local right_layout = wibox.layout.fixed.horizontal()
     right_layout:add(luaConfigFile.newWidget())
---     right_layout:add(separator)
+    right_layout:add(separator)
 --     right_layout:add(cpuinfo)
---     right_layout:add(cseparator)
---     right_layout:add(cmeminfo.newWidget())
---     right_layout:add(cseparator)
+--     right_layout:add(separator)
+    right_layout:add(meminfo.newWidget())
+    right_layout:add(separator)
 --     right_layout:add(battery.widget)
 --     right_layout:add(separator)
 --     right_layout:add(temperature.widget)
