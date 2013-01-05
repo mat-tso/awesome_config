@@ -1,3 +1,9 @@
+-- This module provide a widget that print and control the sound volume
+
+-- Standard awesome library
+local awful = require("awful")
+-- Widget and layout library
+local wibox = require("wibox")
 
 -- Volume widget
 
@@ -87,3 +93,5 @@
 			awful.key({},"XF86AudioMute",        function () self:mute() end)
 		))
 	end
+
+return tb_volume
