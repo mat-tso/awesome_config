@@ -1,10 +1,17 @@
---module("CompteArebours")
+-- This module provide a timer widget
+
+-- Standard awesome library
+local awful = require("awful")
+-- Widget and layout library
+local wibox = require("wibox")
+-- Notification library
+local naughty = require("naughty")
 
 local CompteArebours = {}
 CompteArebours.public = {}
 
 
---notification de fin de timer
+-- Notification
 function CompteArebours.notification (message)
 	message = message or "Compte à rebour terminer"
 	naughty.notify({
@@ -15,21 +22,7 @@ function CompteArebours.notification (message)
 	})
 end
 
-function CompteArebours:playRingtone ()
-
-	self:stopRingtone()
-	self.PIDsonnerie = awful.util.spawn('aplay '.. self.sonnerieFile ..' vlc://quit')
-end
-
-function CompteArebours:stopRingtone ()
-
-	if self.PIDsonnerie then
-		awful.util.spawn("kill " .. self.PIDsonnerie)
-		self.PIDsonnerie = nil
-	end
-end
-
---convertie des seconde en seconde,minute,heure,nbSecTotal
+-- Convertie des seconde en seconde,minute,heure,nbSecTotal
 function CompteArebours.convertirTemps (seconde,minute,heure)
 
 	seconde = tonumber(seconde) or 0
@@ -45,136 +38,211 @@ function CompteArebours.convertirTemps (seconde,minute,heure)
 	return seconde, minute, heure, nbSecTotal
 end
 
-function CompteArebours:changeRingtone()
-	--self.adrrSonnerie = io.popen("zenity --title='Choisir le fichier sonnerie'  --file-selection ; echo fin","r")
-	self.adrrSonnerie = os.tmpname ()
-	awful.util.spawn_with_shell("zenity --title='Choisir le fichier sonnerie'  --file-selection>"..self.adrrSonnerie)
-	self.timerSonnerie:start()
-	-- dialog --fselect "" $(( $(tput lines) - 10 )) $(( $(tput cols) - 2 ))
-	-- dialog  --fselect "" $(dialog --print-maxsize  2>&1 > /dev/null | grep -oe "[0-9]*")
+-- Met a jour l'affichage
+function CompteArebours:redraw()
+	local text = ""
+
+	-- Print time if not null
+	if self.tempsRestant > 0 then
+		local s,m,h = self.convertirTemps(self.tempsRestant)
+		if m == 0 and h == 0 then
+			m=''
+		else
+			m = m .. ":"
+		end
+
+		if h == 0 then
+			h=''
+		else
+			h = h .. ":"
+		end
+		text = text .. h..m..s
+	end
+
+	-- Print if timer is paused
+	if self.started and not self.running and self.tempsRestant > 0 then
+		text = text .. "P"
+	end
+
+	-- Print if timer is ringing
+	if self.ringing then
+		text = text .. "R"
+	end
+
+	-- If nothing to print, print default text
+	if text == "" then
+		text = self.defaultText
+	end
+
+	self.widget:set_text(text)
 end
 
-function CompteArebours:recupSonnerie()
+function CompteArebours:playRingtone ()
+	self:stopRingtone()
+	-- self.PIDsonnerie = awful.util.spawn('aplay '.. self.sonnerieFile ..' vlc://quit')
+	self.PIDsonnerie = awful.util.spawn('cvlc '.. self.sonnerieFile ..' vlc://quit')
+	self.ringing = true
+	self:redraw()
+end
 
-	local file = io.open(self.adrrSonnerie)
-	if file then
-		local son = file:read()
-			if son then
-			--local mimetype = os.execute("mimetype -b "..son)
-			--local mediatype = string.match(mimetype, "\n(.+)/")
-			--if mediatype == "audio" then
-				self.notification(self.sonnerieFile.." est la nouvelle sonnerie")
-				print(self.sonnerieFile.." est la nouvelle sonnerie")
-			--else
-			--	self.notification(son.." est de type : "..mimetype.." et non de type audio")
-			--end
-			file:close ()
-			self.timerSonnerie:stop()
-			os.execute("rm "..self.adrrSonnerie)
+function CompteArebours:stopRingtone ()
+	if self.PIDsonnerie then
+		awful.util.spawn("kill " .. self.PIDsonnerie)
+		self.PIDsonnerie = nil
+	end
+	self.ringing = false
+	self:redraw()
+end
+
+function CompteArebours:changeRingtone()
+	awful.prompt.run(
+		{prompt = 'Ringtone: '},
+		self.widget,
+		function (ringtonePath) self:setRingtone(ringtonePath) end,
+		awful.completion.shell,
+		self.sonneriehistoryFile, -- history_path
+		100, -- history_max
+		function () self:redraw() end -- done_callback : redraw widget
+	)
+end
+
+function CompteArebours:setRingtone(ringtonePath)
+	self.sonnerieFile = ringtonePath
+	local notificationMessage = self.sonnerieFile.." is the new ringtone"
+	if self.sonneriePathFile then
+		local sonneriePathHandler, message = io.open(self.sonneriePathFile, "w")
+		if sonneriePathHandler then
+			sonneriePathHandler:write(self.sonnerieFile)
+			sonneriePathHandler:close()
+			notificationMessage = notificationMessage .. " (saved)"
+		else
+			notificationMessage = notificationMessage ..
+				" (unable to save: " .. message .. ")"
 		end
 	end
-end
-
---met a jour l'affichage
-function CompteArebours:redraw()
-
-	local s,m,h = self.convertirTemps(self.tempsRestant)
-	if m == 0 and h == 0 then
-		m=''
-	else
-		m = m .. ":"
-	end
-
-	if h == 0 then
-		h=''
-	else
-		h = h .. ":"
-	end
-
-	self.widget:set_text(h..m..s)
-end
-
-function CompteArebours:reset ()
-
-	self.tempsRestant = 0
-	self.timer:stop()
-	self.widget:set_text(self.defaultText)
-	self:stopRingtone()
-end
-
-function CompteArebours:update ()
-
-	if self.tempsRestant <= 0 then
-		self.timer:stop()
-		self:playRingtone()
-		self.notification()
-		self:redraw()
-	else
-		self.tempsRestant = self.tempsRestant -1
-		self:redraw()
-	end
+	self.notification(notificationMessage )
 end
 
 function CompteArebours:start()
-
-	if  not self.timer.started then
-		self.timer:start()
-		self:update()
+	if self.tempsRestant > 0 then
+		if not self.timer.started then
+			self.timer:start()
+		end
+		self.started = true
+		self.running = true
+		self:decrease()
 	end
 end
 
-function CompteArebours:ajouter(nbSec)
+function CompteArebours:pause()
+	if self.timer.started then
+		self.timer:stop()
+	end
+	self.running = false
+	self:redraw()
+end
 
+function CompteArebours:toogle()
+	if self.started and self.running then
+		self:pause()
+	else
+		self:start()
+	end
+end
+
+function CompteArebours:stop ()
+	self:pause()
+	self.tempsRestant = 0
+	self:stopRingtone()
+	self.started = false
+	self:redraw()
+end
+
+function CompteArebours:timerEndNotify()
+		self:playRingtone()
+		self.notification()
+end
+
+function CompteArebours:decrease()
+	if self.tempsRestant <= 0 then
+		self:pause()
+		self:timerEndNotify()
+	else
+		self.tempsRestant = self.tempsRestant -1
+	end
+	self:redraw()
+end
+
+function CompteArebours:addTime(nbSec)
 	self.tempsRestant = self.tempsRestant + nbSec
 	if self.tempsRestant < 0 then self.tempsRestant = 0 end
 	self:redraw()
 end
 
-function CompteArebours.public.newWidget()
-
-	myCompteArebours = {}
-	setmetatable(myCompteArebours, { __index = CompteArebours })
-
-	myCompteArebours:init()
-
-	return myCompteArebours.widget
-end
-
-function CompteArebours:init(sonnerieFile)
+function CompteArebours:init(args)
 
 	self.defaultText = "T"
-	self.sonnerieFile = sonnerieFile or "\"/dev/urandom\""
+
+	local args = args or {}
+	self.sonnerieFile = args["sonnerieFile"]
+	self.sonneriePathFile = nil
+
+	if args["saveRingtone"] then
+		local sonneriePathFileSuffix = args["sonneriePathFileSuffix"] or "default"
+		self.sonneriePathFile = awful.util.getdir("cache") .. "/timerRingtone_" .. sonneriePathFileSuffix
+		self.sonneriehistoryFile = awful.util.getdir("cache") .. "/timerRingtoneHistory_" .. sonneriePathFileSuffix
+
+		local sonneriePathFileHandler = io.open(self.sonneriePathFile)
+		if sonneriePathFileHandler and not self.sonnerieFile then
+			self.sonnerieFile = sonneriePathFileHandler:read("*a")
+		end
+	end
+
+	self.sonnerieFile = self.sonnerieFile or "/dev/urandom"
+
 	self.periodeUpdate = 1
 
 	self.tempsRestant=0
 	self.PIDsonnerie = nil
+	self.started = false
+	self.running = false
+	self.ringing = false
 
 	self.widget = wibox.widget.textbox()
 	self.widget:set_text(self.defaultText)
 
 	self.widget:buttons(
 		awful.util.table.join(
-			awful.button({ }, 4, function () self:ajouter(60) end),
-			awful.button({ }, 5, function () self:ajouter(-60) end),
+			awful.button({ }, 4, function () self:addTime(60) end),
+			awful.button({ }, 5, function () self:addTime(-60) end),
 
-			awful.button({ "Shift" }, 4, function () self:ajouter(1) end),
-			awful.button({ "Shift" }, 5, function () self:ajouter(-1) end),
+			awful.button({ "Shift" }, 4, function () self:addTime(1) end),
+			awful.button({ "Shift" }, 5, function () self:addTime(-1) end),
 
-			awful.button({ "Control" }, 4, function () self:ajouter(3600) end),
-			awful.button({ "Control" }, 5, function () self:ajouter(-3600) end),
+			awful.button({ "Control" }, 4, function () self:addTime(3600) end),
+			awful.button({ "Control" }, 5, function () self:addTime(-3600) end),
 
-			awful.button({}, 1, function () self:start() end),
-			awful.button({}, 2, function () self:reset() end),
+			awful.button({}, 1, function () self:toogle() end),
+			awful.button({}, 2, function () self:stop() end),
 			awful.button({}, 3, function () self:stopRingtone() end),
 			awful.button({ modkey }, 3, function () self:changeRingtone() end)
 		)
 	)
-
 	self.timer=timer ({timeout = self.periodeUpdate})
-	self.timer:connect_signal("timeout",function () self:update() end)
+	self.timer:connect_signal("timeout",function () self:decrease() end)
 
 	self.timerSonnerie=timer ({timeout = 1})
 	self.timerSonnerie:connect_signal("timeout",function () self:recupSonnerie() end)
+end
+
+function CompteArebours.public.newWidget(args)
+
+	myCompteArebours = {}
+	setmetatable(myCompteArebours, { __index = CompteArebours })
+
+	myCompteArebours:init(args)
+
+	return myCompteArebours.widget
 end
 
 return CompteArebours.public

@@ -621,7 +621,8 @@ for s = 1, screen.count() do
     right_layout:add(separator)
 --     right_layout:add(kbdcfg:getWidget())
 --     right_layout:add(separator)
---     right_layout:add(CompteArebours.newWidget())
+    right_layout:add(CompteArebours.newWidget({saveRingtone = true}))
+    right_layout:add(separator)
 --     right_layout:add(vpnccfg.widget)
     if s == 1 then right_layout:add(wibox.widget.systray()) end
     right_layout:add(mytextclock)
