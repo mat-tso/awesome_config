@@ -35,21 +35,23 @@ local naughty = require("naughty")
 	end
 	function meminfo:update ()
 		self:getInfo()
-		local myUsedMemory = ((self.stat["MemTotal"]
+
+		local programUsedMemory =  self.stat["MemTotal"]
 				 - self.stat["MemFree"]
-				 -- - self.stat["Buffers"]
-				 -- - self.stat["Cached"]
-				 ))
-		self.stat["myUsedMemory"] = myUsedMemory
-		local myUsedMemoryFrac = myUsedMemory / self.stat["MemTotal"]
-		self.graph:add_value(myUsedMemoryFrac)
+				 - self.stat["Buffers"]
+				 - self.stat["Cached"]
+		self.graph:add_value(programUsedMemory    / self.stat["MemTotal"], 1)
+		self.graph:add_value(self.stat["Buffers"] / self.stat["MemTotal"], 2)
+		self.graph:add_value(self.stat["Cached"]  / self.stat["MemTotal"], 3)
 
 	end
 
 	function meminfo:detailPopup()
 		local info = {
 			{"Statistique de la mémoire vive", nil},
-			{"utilisée (prog, buff, cache)" , self.stat["myUsedMemory"]},
+			{"utilisée (prog, buff, cache)" , self.stat["MemTotal"]
+				 - self.stat["MemFree"]
+			},
 			{"utilisée par les programmes"  , self.stat["MemTotal"]
 				 - self.stat["MemFree"]
 				 - self.stat["Buffers"]
@@ -89,19 +91,18 @@ local naughty = require("naughty")
 		textPopup = textPopup.."\nconf : /proc/meminfo"
 
 		self.nautification = naughty.notify({
-		        text = textPopup,
-		        timeout = 0, hover_timeout = 0.5,
-		        -- width = 270,
+		    text = textPopup,
+		    timeout = 0,
 			screen = mouse.screen
-                })
+        })
 	end
 
-	function meminfo.newWidget()
+	function meminfo.newWidget(colors)
 		myMeminfo = {}
 
 		setmetatable(myMeminfo, { __index = meminfo })
 
-		myMeminfo:init()
+		myMeminfo:init(colors)
 
 		return myMeminfo.graph
 	end
@@ -112,8 +113,17 @@ local naughty = require("naughty")
 
 		self.graph = awful.widget.graph()
 		self.graph:set_width(60)
-		self.graph:set_background_color('#808080') -- Gray
+		self.graph:set_background_color('#505050') -- Gray
 		self.graph:set_color('#008000') -- Green
+		self.graph:set_stack(true)
+		self.graph:set_stack_colors(colors or {
+			'#006400', -- DarkGreen
+			'#00008B', -- DarkBlue
+			'#BDB76B', -- DarkKhaki
+--			'#FF00FF', -- Fuchsia
+--			'#800000', -- Maroon
+--			'#A52A2A', -- Brown
+		})
 
 		self.graph:connect_signal(
 			'mouse::enter',
