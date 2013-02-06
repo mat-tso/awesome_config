@@ -23,6 +23,7 @@ local meminfo = require('meminfo')
 -- volume management widget
 local tb_volume = require('tb_volume')
 
+
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
@@ -525,10 +526,10 @@ function root.addKeys(newKeys)
 	)
 end
 
-root.addKeys(
+root.addKeys(awful.util.table.join(
 	awful.key({ 	}, "XF86Calculator",  function () awful.util.spawn("gcalctool")    end),
 	awful.key({ 	}, "XF86AudioMedia",  function () awful.util.spawn("gmusicbrowser")    end)
-)
+))
 
 
 -- Create a wibox for each screen and add it
@@ -868,3 +869,4 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
+
