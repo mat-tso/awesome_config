@@ -40,9 +40,9 @@ local naughty = require("naughty")
 				 - self.stat["MemFree"]
 				 - self.stat["Buffers"]
 				 - self.stat["Cached"]
-		self.graph:add_value(programUsedMemory    / self.stat["MemTotal"], 1)
-		self.graph:add_value(self.stat["Buffers"] / self.stat["MemTotal"], 2)
-		self.graph:add_value(self.stat["Cached"]  / self.stat["MemTotal"], 3)
+		self.graph.widget:add_value(programUsedMemory    / self.stat["MemTotal"], 1)
+		self.graph.widget:add_value(self.stat["Buffers"] / self.stat["MemTotal"], 2)
+		self.graph.widget:add_value(self.stat["Cached"]  / self.stat["MemTotal"], 3)
 
 	end
 
@@ -104,19 +104,19 @@ local naughty = require("naughty")
 
 		myMeminfo:init(colors)
 
-		return myMeminfo.graph
+		return myMeminfo.graph.layout
 	end
 
-	function meminfo:init()
-
-		self.stat = {}
-
-		self.graph = awful.widget.graph()
-		self.graph:set_width(60)
-		self.graph:set_background_color('#505050') -- Gray
-		self.graph:set_color('#008000') -- Green
-		self.graph:set_stack(true)
-		self.graph:set_stack_colors(colors or {
+	-- TODO: return the layout with all function graph specific fonction
+	-- wrap to the graph widget (by manipulating it's metatable)
+	function meminfo.newGraph()
+		-- New graph widget
+		local widget = awful.widget.graph()
+		widget:set_width(60)
+		widget:set_background_color('#505050') -- Gray
+		widget:set_color('#008000') -- Green
+		widget:set_stack(true)
+		widget:set_stack_colors(colors or {
 			'#006400', -- DarkGreen
 			'#00008B', -- DarkBlue
 			'#BDB76B', -- DarkKhaki
@@ -125,11 +125,29 @@ local naughty = require("naughty")
 --			'#A52A2A', -- Brown
 		})
 
-		self.graph:connect_signal(
+		-- new mirror layout
+		local layout = wibox.layout.mirror()
+		layout:set_reflection({horizontal = false, vertical = true})
+		layout:set_widget(widget)
+
+		return {
+			widget = widget,
+			layout = layout
+			}
+	end
+
+	function meminfo:init()
+
+		self.stat = {}
+
+		-- The graph is a layout containing the widget
+		self.graph = self.newGraph()
+
+		self.graph.layout:connect_signal(
 			'mouse::enter',
 			function() self:detailPopup() end
 		)
-		self.graph:connect_signal(
+		self.graph.layout:connect_signal(
 			'mouse::leave',
 			function ()
 				naughty.destroy(self.nautification)
