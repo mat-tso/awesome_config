@@ -58,13 +58,8 @@ function luaConfigFile:update (notificationDemandee)
 	if valid then
 
 		local tableauLigne = self.tail(self.debugFilePath)
-		local nbligne = #tableauLigne
 
-		if nbligne < 1 then nbligne = 1 end
-
-		message = table.concat(tableauLigne,"\n")
-
-		if message == "" then
+		if #tableauLigne == 0 then
 			message =
 				"Tout est OK ;)\n"..
 				"Commande :\n"..
@@ -74,6 +69,9 @@ function luaConfigFile:update (notificationDemandee)
 				"modkey+shift+clic1 : ouvre $(dirname rc.lua) dans l'editeur\n"..
 				"clic2              : restart si pas d'erreur\n"..
 				"clic3              : efface log et affiche ce message"
+		else
+
+			message = table.concat(tableauLigne,"\n")
 		end
 	end
 
