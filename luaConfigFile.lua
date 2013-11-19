@@ -49,31 +49,31 @@ function luaConfigFile.clear(path)
 	io.open(path,"w+"):close()
 end
 
+function luaConfigFile:getLogTail()
+	local tableauLigne = self.tail(self.debugFilePath)
+	local message = table.concat(tableauLigne,"\n")
+
+	if message:len() == 0 then
+		message =
+			"Tout est OK ;)\n"..
+			"Commande :\n"..
+			"clic1              : actualisation\n"..
+			"modkey+clic1       : ouvre rc.lua dans l'editeur\n"..
+			"modkey+ctl+clic1   : ouvre *.lua dans l'éditeur\n"..
+			"modkey+shift+clic1 : ouvre $(dirname rc.lua) dans l'editeur\n"..
+			"clic2              : restart si pas d'erreur\n"..
+			"clic3              : efface log et affiche ce message"
+	end
+	return message
+end
+
 function luaConfigFile:update (notificationDemandee)
 	notificationDemandee = notificationDemandee or false
 
 	local valid, message = self.isLuaFileValid(self.configFilePath)
+
+	-- update widget text
 	self.widget:set_text(self.bool2char(valid))
-
-	if valid then
-
-		local tableauLigne = self.tail(self.debugFilePath)
-
-		if #tableauLigne == 0 then
-			message =
-				"Tout est OK ;)\n"..
-				"Commande :\n"..
-				"clic1              : actualisation\n"..
-				"modkey+clic1       : ouvre rc.lua dans l'editeur\n"..
-				"modkey+ctl+clic1   : ouvre *.lua dans l'éditeur\n"..
-				"modkey+shift+clic1 : ouvre $(dirname rc.lua) dans l'editeur\n"..
-				"clic2              : restart si pas d'erreur\n"..
-				"clic3              : efface log et affiche ce message"
-		else
-
-			message = table.concat(tableauLigne,"\n")
-		end
-	end
 
 	if notificationDemandee then
 		--destroy previous notification
@@ -82,7 +82,7 @@ function luaConfigFile:update (notificationDemandee)
 		end
 
 		self.notification = naughty.notify({
-			text = message,
+			text = not valid and message or self:getLogTail(),
 			timeout = 0, hover_timeout = 0.5,
 			screen = mouse.screen, --width = 450
 		})
