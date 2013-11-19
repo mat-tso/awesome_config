@@ -102,7 +102,7 @@ function luaConfigFile.openConfigFile(file)
 end
 
 --create widget
-function luaConfigFile:addWidget()
+function luaConfigFile:init()
 
 	self.widget = wibox.widget.textbox()
 
@@ -161,7 +161,7 @@ function luaConfigFile.newWidget()
 	myluaConfigFile = {}
 	setmetatable(myluaConfigFile, { __index = luaConfigFile })
 
-	myluaConfigFile:addWidget()
+	myluaConfigFile:init()
 	return myluaConfigFile.widget
 end
 
