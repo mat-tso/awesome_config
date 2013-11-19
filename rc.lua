@@ -172,7 +172,6 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 -- Add a amend keys fonction to root
 function root.addKeys(keys_array)
-	io.stderr:write("Adding "..#keys_array.." global keys\n")
 	root.keys(
 		awful.util.table.join(
 			root.keys(),
