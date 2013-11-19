@@ -73,7 +73,11 @@ function luaConfigFile:update (notificationDemandee)
 	local valid, message = self.isLuaFileValid(self.configFilePath)
 
 	-- update widget text
-	self.widget:set_text(self.bool2char(valid))
+	local text = self.bool2char(valid)
+	if self.text ~= text then
+		self.widget:set_text(text)
+		self.text = text
+	end
 
 	if notificationDemandee then
 		--destroy previous notification
@@ -105,6 +109,7 @@ end
 function luaConfigFile:init()
 
 	self.widget = wibox.widget.textbox()
+	self.text = ""
 
 	--timer
 	self.timer = timer({ timeout = 30})

@@ -25,7 +25,10 @@ local wibox = require("wibox")
 		else
 			volume = "V:" .. volume .. "M"
 		end
-		self.widget:set_text(volume)
+		if self.text ~= volume then
+			self.widget:set_text(volume)
+			self.text = volume
+		end
 	end
 
 	function tb_volume:setVolume (newVolume)
@@ -78,6 +81,8 @@ local wibox = require("wibox")
 				)
 			)
 		)
+		-- Text displayed by widget
+		self.text = ""
 
 		--update timer
 		self.timer = timer({ timeout = 10})
