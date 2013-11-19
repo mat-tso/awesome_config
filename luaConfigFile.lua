@@ -106,10 +106,10 @@ function luaConfigFile:init()
 
 	self.widget = wibox.widget.textbox()
 
-	self:update()
 	--timer
 	self.timer = timer({ timeout = 30})
 	self.timer:connect_signal("timeout", function () self:update() end)
+	self.timer:emit_signal("timeout")
 	self.timer:start()
 
 	--signals

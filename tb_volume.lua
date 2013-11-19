@@ -65,11 +65,6 @@ local wibox = require("wibox")
 
 		self.channel = channel or "Master"
 
-		--update timer
-		self.timer = timer({ timeout = 10})
-		self.timer:connect_signal("timeout", function() self:update() end)
-		self.timer:start()
-
 		--widget definition
 		self.widget = wibox.widget.textbox()
 		self.widget:buttons(
@@ -83,7 +78,12 @@ local wibox = require("wibox")
 				)
 			)
 		)
-		self:update()
+
+		--update timer
+		self.timer = timer({ timeout = 10})
+		self.timer:connect_signal("timeout", function() self:update() end)
+		self.timer:emit_signal("timeout")
+		self.timer:start()
 
 		-- add keys
 		root.addKeys(awful.util.table.join(
