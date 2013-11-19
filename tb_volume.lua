@@ -50,7 +50,7 @@ local wibox = require("wibox")
 		mytb_volume = {}
 		setmetatable(mytb_volume, { __index = tb_volume })
 
-		mytb_volume:init (cardid, channel)
+		mytb_volume:init(cardid, channel)
 
 		return mytb_volume.widget
 	end
