@@ -72,7 +72,6 @@ local wibox = require("wibox")
 
 		--widget definition
 		self.widget = wibox.widget.textbox()
-		--tb_volume:set_text("volume")
 		self.widget:buttons(
 			awful.util.table.join(
 				awful.button({ }, 4, function () self:up() end),

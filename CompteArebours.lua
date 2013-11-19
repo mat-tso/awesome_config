@@ -230,9 +230,6 @@ function CompteArebours:init(args)
 	)
 	self.timer=timer ({timeout = self.periodeUpdate})
 	self.timer:connect_signal("timeout",function () self:decrease() end)
-
-	self.timerSonnerie=timer ({timeout = 1})
-	self.timerSonnerie:connect_signal("timeout",function () self:recupSonnerie() end)
 end
 
 function CompteArebours.public.newWidget(args)

@@ -141,13 +141,6 @@ function luaConfigFile:addWidget()
 		awful.button({ modkey , "Control" }, 1,
 			function ()
 				luaConfigFile.openConfigFile("*.lua")
---				awful.util.spawn_with_shell(
---					"cd '"..awful.util.getdir("config") .. "' && " ..
---					"find  . " ..
---						" \\( -name .git -prune \\) -o " ..
---						"-name '*.lua' -print0 | " ..
---					"xargs --null -n1 -P5 ".. editor_cmd .. )
---					editor_cmd .. "*.lua" )
 			end
 		),
 
