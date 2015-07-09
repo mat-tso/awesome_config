@@ -152,9 +152,51 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 -- Create a systray
 mysystray = widget({ type = "systray" })
 
+-- Create a bus stop widget
+tisseo = {}
+function tisseo:init()
+    self.widget = widget({ type = "textbox" })
+    self:updateCb("Unknown")
+
+    self.widget:add_signal('mouse::enter', function()
+        self.notification = naughty.notify({
+            text = self.text .. "\n" .. os.date("Update:\n%M:%S ago", os.time() - self.time),
+            timeout = 0,
+            screen = mouse.screen})
+        end)
+    self.widget:add_signal('mouse::leave', function ()
+        naughty.destroy(self.notification)
+        self.notification=nil
+        end)
+
+    self.timer = timer({ timeout = 200 })
+    self.timer:add_signal("timeout", function() self:asyncUpdate() end)
+    self.timer:emit_signal("timeout")
+    self.timer:start()
 
 end
 
+function tisseo:asyncUpdate(text)
+    os.execute([=[ wget -q -O- \
+        'http://www.tisseo.fr/prochains-passages/resultat?stop_num=4291&stop_id=1970324837636067&line_id=11821949022509040' \
+        'http://www.tisseo.fr/prochains-passages/resultat?stop_num=2800%2C2802&stop_id=1970324837185954&line_id=11821949021891618' |
+            sed -r '/td_horaires/{N;N;N;N;/Basso/!d;s/(\n[^\n]*){2}$//;bp};d;
+                    :p;s/<[^>]*>|[\t ]+//g;s/\n\n/ /g' |
+            sort -n |
+            xargs -0 printf 'tisseo:updateCb([[%s]])' |
+            awesome-client &
+    ]=])
+end
+
+function tisseo:updateCb(text)
+    self.time = os.time()
+    if text == ""
+        then self.text = "No bus"
+        else self.text = text
+    end
+    self.widget.text = string.gmatch(text, '[^\n]*')()
+end
+tisseo:init();
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -230,9 +272,10 @@ for s = 1, screen.count() do
             mypromptbox[s],
             layout = awful.widget.layout.horizontal.leftright
         },
-
         mylayoutbox[s],
         mytextclock,
+        separator,
+        tisseo.widget,
         s == 1 and mysystray or nil,
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
