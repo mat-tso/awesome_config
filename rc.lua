@@ -153,15 +153,6 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 mysystray = widget({ type = "systray" })
 
 
--- Add a amend keys fonction to root
-function root.addKeys(keys_array)
-	io.stderr:write("Adding "..#keys_array.." global keys\n")
-	root.keys(
-		awful.util.table.join(
-			root.keys(),
-			keys_array
-		)
-	)
 end
 
 
@@ -387,8 +378,8 @@ clientbuttons = awful.util.table.join(
     awful.button({ modkey }, 1, awful.mouse.client.move),
     awful.button({ modkey }, 3, awful.mouse.client.resize))
 
--- Add keys
-root.addKeys(globalkeys)
+-- Set keys
+root.keys(globalkeys)
 -- }}}
 
 -- {{{ Rules
