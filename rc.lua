@@ -312,8 +312,8 @@ globalkeys = awful.util.table.join(
     -- Layout manipulation
     awful.key({ modkey, "Shift"   }, "b", function () awful.client.swap.byidx(  1)    end),
     awful.key({ modkey, "Shift"   }, "a", function () awful.client.swap.byidx( -1)    end),
-    awful.key({ modkey, "Control" }, "b", function () awful.screen.focus_relative( 1) end),
-    awful.key({ modkey, "Control" }, "a", function () awful.screen.focus_relative(-1) end),
+    awful.key({ modkey, "Shift"   }, "Left", function () awful.screen.focus_relative( 1) end),
+    awful.key({ modkey, "Shift"   }, "Right", function () awful.screen.focus_relative(-1) end),
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
     awful.key({ modkey,           }, "Tab",
         function ()
