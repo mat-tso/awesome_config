@@ -6,18 +6,6 @@ require("awful.rules")
 require("beautiful")
 -- Notification library
 require("naughty")
-	-- Vicious widget library
-	--require("vicious")
---to add a calendar
-require('calendar2')
---compte a rebours
-CompteArebours = require('CompteArebours')
---lua config widget
-require('luaConfigFile')
--- meminfo widget
-require('meminfo')
--- volume management widget
-require('tb_volume')
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -244,22 +232,6 @@ for s = 1, screen.count() do
 
         mylayoutbox[s],
         mytextclock,
-        luaConfigFile.newWidget(),
---      separator,
---      cpuinfo,
-        separator,
-        meminfo.newWidget(),
---      separator,
---      battery.widget,
---      separator,
---      temperature.widget,
-        separator,
-        tb_volume.newWidget(),
-        separator,
-        kbdcfg:getWidget(),
-        separator,
-        CompteArebours.newWidget(),
---      vpnccfg.widget,
         s == 1 and mysystray or nil,
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
