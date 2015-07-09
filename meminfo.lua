@@ -79,7 +79,7 @@
 		end
 		textPopup = textPopup.."\nconf : /proc/meminfo"
 
-		self.nautification = naughty.notify({
+		self.notification = naughty.notify({
 		        text = textPopup,
 		        timeout = 0, hover_timeout = 0.5,
 		        -- width = 270,
@@ -110,8 +110,8 @@
 
 		self.graph.widget:add_signal('mouse::enter', function() self:detailPopup() end)
 		self.graph.widget:add_signal('mouse::leave', function ()
-			naughty.destroy(self.nautification)
-			self.nautification=nil
+			naughty.destroy(self.notification)
+			self.notification=nil
 			end)
 
 		self.timer = timer({ timeout = 10})
