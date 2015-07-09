@@ -95,6 +95,12 @@ myawesomemenu = {
 }
 
 myracourciesmenu = {
+   { "parcellite",     "parcellite" },
+   { "locker",         "xautolock " ..
+                       "-time 3 -locker 'gnome-screensaver-command --lock' " ..
+                       "-notify 10 -notifier 'notify-send -t 10000 -u critical Locking imminent' " ..
+                       "-killtime 10 -killer 'sudo pm-suspend' " ..
+                       "-nowlocker 'gnome-screensaver-command --lock'"},
 }
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
                                     { "Debian", debian.menu.Debian_menu.Debian },
@@ -288,8 +294,8 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
 
-    awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
-    awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
+    awful.key({ modkey, "Alt"     }, "l",     function () awful.tag.incmwfact( 0.05)    end),
+    awful.key({ modkey, "Alt"     }, "h",     function () awful.tag.incmwfact(-0.05)    end),
     awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1)      end),
     awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
     awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1)         end),
@@ -301,6 +307,8 @@ globalkeys = awful.util.table.join(
 
     -- awful.key({ 	}, "XF86Calculator",  function () awful.util.spawn("gcalctool")    end),
     -- awful.key({ 	}, "XF86AudioMedia",  function () awful.util.spawn("gmusicbrowser")    end),
+    -- screen lock
+    awful.key({ modkey,           }, "l",     function () awful.util.spawn("xautolock -locknow") end),
 
     -- Prompt
     awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
