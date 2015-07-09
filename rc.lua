@@ -40,9 +40,9 @@ end
 beautiful.init("/usr/share/awesome/themes/sky/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "xterm"
+terminal = "x-terminal-emulator"
 editor = os.getenv("EDITOR") or "vim"
-editor_cmd = terminal .. " -e " .. editor
+editor_cmd = terminal .. " -e '" .. editor
 
 -- Default modkey.
 -- Usually, Mod4 is the key with a logo between Control and Alt.
@@ -73,12 +73,12 @@ layouts =
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {
-	names = { "Terminal", "Opera", "Editeur", "Fichiers", "Media",
-		 "Skype", "Gimp", 8, 9 },
-	layout = {
-		layouts[1], layouts[1], layouts[1], layouts[5], layouts[1],
-		layouts[9], layouts[10], layouts[1], layouts[1] }
-	}
+    names = { "Terminal", "Navigateur", "Editeur", "Fichiers", "Compile",
+         "Media", "Gimp", 8, 9 },
+    layout = {
+        layouts[1], layouts[1], layouts[1], layouts[5], layouts[1],
+        layouts[9], layouts[10], layouts[1], layouts[1] }
+    }
 for s = 1, screen.count() do
     -- Each screen has its own tag table.
     tags[s] = awful.tag(tags.names, s, tags.layout)
@@ -89,18 +89,22 @@ end
 -- Create a laucher widget and a main menu
 myawesomemenu = {
    { "manual", terminal .. " -e man awesome" },
-   { "edit config", editor_cmd .. " " .. awesome.conffile },
+   { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/rc.lua'" },
    { "restart", awesome.restart },
    { "quit", awesome.quit }
 }
 
 myracourciesmenu = {
+   { "gnome settings", "gnome-settings-daemon" },
    { "parcellite",     "parcellite" },
+--   { "Synergis",       "sh -c 'killall synergys ; synergys -a :5900'"},
    { "locker",         "xautolock " ..
                        "-time 3 -locker 'gnome-screensaver-command --lock' " ..
                        "-notify 10 -notifier 'notify-send -t 10000 -u critical Locking imminent' " ..
+--                       "-corners 000+ -cornerdelay 5 -cornerredelay 60 " ..
                        "-killtime 10 -killer 'sudo pm-suspend' " ..
                        "-nowlocker 'gnome-screensaver-command --lock'"},
+--   { "Update wallpaper", function () dynamicWallpaper.timer:emit_signal("timeout") end }
 }
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
                                     { "Debian", debian.menu.Debian_menu.Debian },
@@ -111,43 +115,32 @@ mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesom
 
 mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
                                      menu = mymainmenu })
--- start up programe lunching
-	function run_once(prg,arg_string,pname,screen)
-	    if not prg then
-		do return nil end
-	    end
-
-	    if not pname then
-	       pname = prg
-	    end
-
-	    if not arg_string then
-		awful.util.spawn_with_shell("pgrep -u $USER -x '" .. pname .. "' || (" .. prg .. ")",screen)
-	    else
-		awful.util.spawn_with_shell("pgrep -u $USER -x '" .. pname .. "' || (" .. prg .. " " .. arg_string .. ")",screen)
-	    end
-	end
-
-	--run_once("xscreensaver", "-no-splash")
-	--run_once("opera")
-	run_once("firefox")
-	run_once("redshift", "-l 43.61:1.45 -m vidmode -t 5700:3690 -r")
-	--run_once("xfce4-clipman")
-	--run_once("nm-applet")
-
 -- }}}
 
 -- {{{ Wibox
-
-
 -- Create a textclock widget
-	mytextclock = awful.widget.textclock({ align = "right" })
-	--add calendar
-	calendar2.addCalendarToWidget(mytextclock, "<span color='orange'>%s</span>")
+mytextclock = awful.widget.textclock({ align = "right" })
+
+dynamicWallpaper = {}
+function dynamicWallpaper:init()
+    self.dir = "~/projects/xplanet/"
+    self.options = ""
+    function self.setWallpaper ()
+        awful.util.spawn_with_shell(
+            self.dir.."generate_map.sh "..self.options..
+            " && awsetbg "..self.dir.."wallpaper.jpg"
+        )
+    end
+    self.timer = timer({timeout = 600})
+    self.timer:add_signal("timeout", self.setWallpaper)
+    self.timer:emit_signal("timeout")
+    self.timer:start()
+end
+-- dynamicWallpaper:init()
 
 -- create separator
-	separator = widget({ type = "textbox" })
-	separator.text = " "
+    separator = widget({ type = "textbox" })
+    separator.text = " "
 
 -- Create a systray
 mysystray = widget({ type = "systray" })
@@ -214,17 +207,11 @@ mytaglist.buttons = awful.util.table.join(
 mytasklist = {}
 mytasklist.buttons = awful.util.table.join(
                      awful.button({ }, 1, function (c)
-                                              if c == client.focus then
-                                                  c.minimized = true
-                                              else
-                                                  if not c:isvisible() then
-                                                      awful.tag.viewonly(c:tags()[1])
-                                                  end
-                                                  -- This will also un-minimize
-                                                  -- the client, if needed
-                                                  client.focus = c
-                                                  c:raise()
+                                              if not c:isvisible() then
+                                                  awful.tag.viewonly(c:tags()[1])
                                               end
+                                              client.focus = c
+                                              c:raise()
                                           end),
                      awful.button({ }, 3, function ()
                                               if instance then
@@ -358,7 +345,7 @@ globalkeys = awful.util.table.join(
 
 clientkeys = awful.util.table.join(
     awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end),
-    awful.key({ modkey, "Shift"   }, "k",      function (c) c:kill()                         end),
+    awful.key({ modkey, "Shift"   }, "d",      function (c) c:kill()                         end),
     awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ),
     awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
     awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
