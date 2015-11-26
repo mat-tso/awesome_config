@@ -119,6 +119,10 @@ myawesomemenu = {
 }
 
 myracourciesmenu = {
+   { "locker",         "xautolock " ..
+                       "-time 3 -locker 'xtrlock -b' " ..
+                       "-notify 10 -notifier 'notify-send -t 10000 -u critical Locking imminent' " ..
+                       "-killtime 10 -killer 'sudo pm-suspend'"},
 }
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
                                     { "Racourcis", myracourciesmenu},
@@ -145,7 +149,6 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 	    end
 	end
 
-	--run_once("xscreensaver", "-no-splash")
 	--run_once("opera")
 	run_once("firefox")
 --	run_once("redshift", "-l 43.61:1.45 -m vidmode -t 5700:3690 -r")
@@ -337,6 +340,7 @@ globalkeys = awful.util.table.join(
 
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
+    awful.key({ modkey,           }, "l",      function () awful.util.spawn("xautolock -locknow") end),
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
 
