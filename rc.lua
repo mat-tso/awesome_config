@@ -1,4 +1,4 @@
--- Standard awesome library
+-- Standard awesome library -- {{{
 local gears = require("gears")
 local awful = require("awful")
 awful.rules = require("awful.rules")
@@ -10,9 +10,10 @@ local beautiful = require("beautiful")
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
+-- }}}
 
--- User library
---to add a calendar
+-- User library {{{
+-- to add a calendar
 local calendar2 = require('calendar2')
 --compte a rebours
 local CompteArebours = require('CompteArebours')
@@ -22,6 +23,7 @@ local luaConfigFile = require('luaConfigFile')
 local meminfo = require('meminfo')
 -- volume management widget
 local tb_volume = require('tb_volume')
+-- }}}
 
 
 -- {{{ Error handling
@@ -524,3 +526,5 @@ client.connect_signal("focus", function(c) c.border_color = beautiful.border_foc
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
 
+-- Special option to edit this file
+-- vim:fileencoding=utf-8:foldmethod=marker:foldlevel=0
