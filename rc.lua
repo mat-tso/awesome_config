@@ -23,6 +23,8 @@ local luaConfigFile = require('luaConfigFile')
 local meminfo = require('meminfo')
 -- volume management widget
 local tb_volume = require('tb_volume')
+-- watch widget
+local watch = require('watch')
 -- }}}
 
 
@@ -273,6 +275,8 @@ for s = 1, screen.count() do
 --     right_layout:add(temperature.widget)
 --     right_layout:add(separator)
     right_layout:add(tb_volume.newWidget())
+    right_layout:add(separator)
+    right_layout:add(watch.newWidget(awful.util.getdir("config") .. "/bus.sh"))
     right_layout:add(separator)
 --     right_layout:add(kbdcfg:getWidget())
 --     right_layout:add(separator)
