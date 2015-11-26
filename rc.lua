@@ -149,7 +149,6 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 	    end
 	end
 
-	--run_once("opera")
 	run_once("firefox")
 --	run_once("redshift", "-l 43.61:1.45 -m vidmode -t 5700:3690 -r")
 	awful.util.spawn_with_shell(
