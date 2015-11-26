@@ -16,11 +16,19 @@ local wibox = require("wibox")
 		fd:close()
 
 		local volume = string.match(status, "(%d?%d?%d)%%")
+		if volume == nil then
+			io.stderr:write("Could not extract volume from: " .. status)
+			return
+		end
 		volume = string.format("% 3d", volume)
 
-		status = string.match(status, "%[(o[^%]]*)%]")
+		boolStatus = string.match(status, "%[(o[^%]]*)%]")
+		if boolStatus == nil then
+			io.stderr:write("Could not extract status from: " .. status)
+			return
+		end
 
-		if string.find(status, "on", 1, true) then
+		if string.find(boolStatus, "on", 1, true) then
 			volume = "V:" .. volume .. "%"
 		else
 			volume = "V:" .. volume .. "M"
@@ -81,8 +89,6 @@ local wibox = require("wibox")
 				)
 			)
 		)
-		-- Text displayed by widget
-		self.text = ""
 
 		--update timer
 		self.timer = timer({ timeout = 10})
