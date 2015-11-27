@@ -150,13 +150,11 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 	end
 
 	run_once("firefox")
---	run_once("redshift", "-l 43.61:1.45 -m vidmode -t 5700:3690 -r")
+	run_once("parcellite")
 	awful.util.spawn_with_shell(
 		"killall redshift;"..
 		"redshift -l 43.61:1.45 -m vidmode -t 5700:3690 -r"
 	)
-	--run_once("xfce4-clipman")
-	--run_once("nm-applet")
 
 -- Menubar configuration
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
