@@ -155,7 +155,7 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 	run_once("parcellite")
 	awful.util.spawn_with_shell(
 		"killall redshift;"..
-		"redshift -l 43.61:1.45 -m vidmode -t 5700:3690 -r"
+		"redshift -l 43.61:1.45 -m vidmode -t 5000:3000 -r"
 	)
 
 -- Menubar configuration
