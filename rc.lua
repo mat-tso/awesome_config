@@ -338,6 +338,7 @@ globalkeys = awful.util.table.join(
                 client.focus:raise()
             end
         end),
+    awful.key({ modkey, "Shift"   }, "Tab", function () awful.screen.focus_relative( 1) end),
 
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
