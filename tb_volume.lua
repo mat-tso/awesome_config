@@ -45,11 +45,11 @@ local wibox = require("wibox")
 	end
 
 	function tb_volume:up ()
-		self:setVolume("5%+")
+		self:setVolume("3%+")
 	end
 
 	function tb_volume:down ()
-		self:setVolume("5%-")
+		self:setVolume("3%-")
 	end
 
 	function tb_volume:mute ()
