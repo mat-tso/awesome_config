@@ -13,7 +13,6 @@ CompteArebours.public = {}
 
 -- Notification
 function CompteArebours.notification (message)
-	message = message or "Compte à rebour terminer"
 	naughty.notify({
 		text = message,
 		timeout = 10, hover_timeout = 0.5,
@@ -120,7 +119,7 @@ function CompteArebours:setRingtone(ringtonePath)
 				" (unable to save: " .. message .. ")"
 		end
 	end
-	self.notification(notificationMessage )
+	self.notification(notificationMessage)
 end
 
 function CompteArebours:start()
@@ -160,7 +159,7 @@ end
 
 function CompteArebours:timerEndNotify()
 		self:playRingtone()
-		self.notification()
+		self.notification("Compte à rebour terminer\nPlaying: " .. self.sonnerieFile)
 end
 
 function CompteArebours:decrease()
