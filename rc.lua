@@ -172,7 +172,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 -- create separator
 	separator = wibox.widget.textbox()
-	separator:set_text(" ")
+	separator:set_text("  ")
 
 -- Add a amend keys fonction to root
 function root.addKeys(keys_array)
